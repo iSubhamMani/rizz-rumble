@@ -22,11 +22,12 @@ const JoinButton = () => {
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="uppercase animate-bounce mt-8 border border-white font-bold text-sm sm:text-base p-6 
+          className="uppercase fade-pullup mt-8 border border-white font-bold text-sm sm:text-base p-6 
              text-white hover:bg-white hover:text-violet-500 
              bg-transparent relative z-10 
              shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6] 
              hover:shadow-[0_0_20px_#8b5cf6,0_0_40px_#8b5cf6] 
+             transition-all duration-200 ease-in-out
              "
         >
           <Swords className="size-6 mr-2 hover:text-violet-500  drop-shadow-[0_0_6px_#8b5cf6]" />
@@ -84,7 +85,7 @@ const JoinButton = () => {
           <div className="flex flex-col w-full">
             <Button
               type="submit"
-              className="uppercase w-full border border-white text-white font-bold py-5 bg-transparent
+              className="uppercase transition-all duration-200 ease-in-out w-full border border-white text-white font-bold py-5 bg-transparent
                   hover:bg-white hover:text-violet-500 shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6]"
             >
               Login

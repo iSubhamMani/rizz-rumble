@@ -13,7 +13,7 @@ export default function HeroTextAnimation() {
         damping: 14,
         opacity: { delay: 0.1, duration: 0.4 },
       }}
-      className="drop-shadow-[0_0_10px_rgba(139,92,246,0.4)] font-anton text-5xl sm:text-7xl xl:text-9xl font-bold tracking-wider leading-tight mb-12 text-transparent bg-clip-text bg-gradient-to-r from-violet-200 to-white"
+      className="drop-shadow-[0_0_12px_rgba(139,92,246,0.8)] font-anton text-5xl sm:text-7xl xl:text-9xl font-bold tracking-wider leading-tight mb-12 text-transparent bg-clip-text bg-gradient-to-r from-violet-200 to-white"
     >
       Enter The Ultimate Prompt Battle Experience
     </motion.h1>
