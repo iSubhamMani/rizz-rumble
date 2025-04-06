@@ -106,6 +106,9 @@
 }
 
 @layer base {
+  [data-slot="input"] input {
+    @apply caret-white text-white;
+  }
   * {
     @apply border-border;
   }
