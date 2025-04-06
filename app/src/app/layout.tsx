@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Raleway } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const anton = Anton({
   variable: "--font-anton",
@@ -29,6 +30,8 @@ export default function RootLayout({
       <body
         className={`${anton.variable} ${raleway.variable} uppercase antialiased`}
       >
+        <Toaster />
+
         {children}
       </body>
     </html>
