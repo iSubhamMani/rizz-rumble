@@ -23,6 +23,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { verifyEmail } from "@/actions/email/verify";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -31,6 +32,7 @@ const JoinButton = () => {
   const [email, setEmail] = useState("");
   const [form, setForm] = useState<"login" | "signup" | "otp">("login");
   const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const handleSignup = async () => {
     try {
@@ -47,6 +49,10 @@ const JoinButton = () => {
           duration: 3000,
           position: "bottom-right",
         });
+        localStorage.setItem("userEmail", email);
+        setEmail("");
+        setPassword("");
+        setUsername("");
         setForm("otp");
       }
     } catch (error) {
@@ -59,13 +65,28 @@ const JoinButton = () => {
     }
   };
 
-  const handleOtpVerify = () => {
+  const handleOtpVerify = async () => {
     // replace with actual OTP verification logic
-    console.log("Verifying OTP:");
-    toast("OTP verified (mock)", {
-      duration: 3000,
-      position: "bottom-right",
-    });
+    try {
+      setLoading(true);
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) throw new Error("Error Getting User Info");
+      const res = await verifyEmail(userEmail, otp);
+
+      if (res.success) {
+        toast("OTP verified successfully", {
+          duration: 3000,
+          position: "bottom-right",
+        });
+        localStorage.removeItem("userEmail");
+        setForm("login");
+        setOtp("");
+      }
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Error Verifying Email");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,7 +139,12 @@ const JoinButton = () => {
         <form className="space-y-6" onSubmit={handleSubmit}>
           {form === "otp" && (
             <div className="space-y-2">
-              <InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS_AND_CHARS}>
+              <InputOTP
+                value={otp}
+                onChange={(value) => setOtp(value)}
+                maxLength={6}
+                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+              >
                 <InputOTPGroup className="flex gap-2 justify-center">
                   {[...Array(6)].map((_, index) => (
                     <InputOTPSlot
