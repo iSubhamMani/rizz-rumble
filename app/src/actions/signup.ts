@@ -26,7 +26,7 @@ export async function signup(formData: FormData) {
 
     if (existingUsername) throw new Error("Username already taken");
 
-    const existingUser = await UserModel.findOne({ email, verified: true });
+    const existingUser = await UserModel.findOne({ email });
 
     if (existingUser) throw new Error("User with this email already exists");
 
@@ -56,10 +56,10 @@ export async function signup(formData: FormData) {
     // send otp to email
 
     const { error } = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>",
-      to: ["manisubham09@gmail.com"],
-      subject: "Hello world",
-      react: await EmailTemplate({ firstName: "Subham. Your OTP is: " + otp }),
+      from: "Subham from Prompt Brawl <no-reply@updates.subhammani.xyz>",
+      to: email,
+      subject: "OTP For Email Verification - Prompt Brawl",
+      react: await EmailTemplate({ name: username, otp: otp.toString() }),
     });
 
     if (error) {
@@ -68,7 +68,7 @@ export async function signup(formData: FormData) {
 
     return {
       success: true,
-      message: "User created successfully",
+      message: "User registered successfully",
     };
   } catch (error) {
     throw new Error(
