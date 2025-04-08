@@ -38,7 +38,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
         color: "#fff",
       }}
     >
-      Verify your email to claim your username! Your OTP is:
+      Verify your email to claim your username. Your OTP is:
     </p>
 
     <div
