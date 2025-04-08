@@ -91,8 +91,6 @@ const JoinButton = () => {
           duration: 3000,
           position: "bottom-right",
         });
-        localStorage.setItem("userEmail", email);
-        setEmail("");
         setPassword("");
         setUsername("");
         setForm("otp");
@@ -111,7 +109,7 @@ const JoinButton = () => {
     // replace with actual OTP verification logic
     try {
       setLoading(true);
-      const userEmail = email || localStorage.getItem("userEmail");
+      const userEmail = email;
       if (!userEmail) throw new Error("Error Getting User Info");
       const res = await verifyEmail(userEmail, otp);
 
@@ -120,7 +118,6 @@ const JoinButton = () => {
           duration: 3000,
           position: "bottom-right",
         });
-        localStorage.removeItem("userEmail");
         setForm("login");
         setOtp("");
       }
