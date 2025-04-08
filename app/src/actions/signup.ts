@@ -9,9 +9,10 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function signup(formData: FormData) {
-  const username = formData.get("username") as string;
+  let username = formData.get("username") as string;
   const password = formData.get("password") as string;
   const email = formData.get("email") as string;
+  username = username.toUpperCase();
 
   if (!username.trim() || !password.trim() || !email.trim())
     throw new Error("Username, password and email are required");
@@ -50,7 +51,7 @@ export async function signup(formData: FormData) {
       password: hashedPassword,
       email,
       otp,
-      otpExpiry: new Date(Date.now() + 30 * 60 * 1000), // OTP valid for 30 minutes
+      otpExpiry: new Date(Date.now() + 10 * 60 * 1000), // OTP valid for 10 minutes
     });
     if (!newUser) throw new Error("Error creating user");
     // send otp to email
@@ -58,8 +59,8 @@ export async function signup(formData: FormData) {
     const { error } = await resend.emails.send({
       from: "Subham from Prompt Brawl <no-reply@updates.subhammani.xyz>",
       to: email,
-      subject: "OTP For Email Verification - Prompt Brawl",
-      react: await EmailTemplate({ name: username, otp: otp.toString() }),
+      subject: "Verify Your Email - Prompt Brawl",
+      react: await EmailTemplate({ otp: otp.toString() }),
     });
 
     if (error) {
