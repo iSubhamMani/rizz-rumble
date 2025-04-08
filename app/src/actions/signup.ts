@@ -61,6 +61,7 @@ export async function signup(formData: FormData) {
       to: email,
       subject: "Verify Your Email - Prompt Brawl",
       react: await EmailTemplate({ otp: otp.toString() }),
+      text: `Welcome Soldier!\nVerify your email to claim your username.\nYour OTP is: ${otp}\nThis OTP is valid for 10 minutes. Please do not share it with anyone.`,
     });
 
     if (error) {
