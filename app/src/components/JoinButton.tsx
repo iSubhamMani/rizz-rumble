@@ -16,6 +16,7 @@ import { useState } from "react";
 import { signup } from "@/actions/signup";
 import { toast } from "sonner";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import { signIn } from "next-auth/react";
 
 import {
   InputOTP,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/input-otp";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { verifyEmail } from "@/actions/email/verify";
+import { sendOtp } from "@/actions/email/send";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -34,11 +36,51 @@ const JoinButton = () => {
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
 
+  const verifyCredentials = (
+    username: string,
+    password: string,
+    email: string
+  ) => {
+    try {
+      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!isEmailValid) throw new Error("Invalid email address");
+
+      if (!username.trim() || !password.trim())
+        throw new Error("Username and password are required");
+      const isUsernameValid = /^[a-zA-Z0-9_]+$/.test(username); // Regex to allow only alphanumeric characters and underscores
+      if (!isUsernameValid)
+        throw new Error(
+          "Only alphanumeric characters and underscores are allowed in username"
+        );
+      const isPasswordValid = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(
+        password
+      ); // At least 8 characters, at least one letter and one number
+      if (!isPasswordValid)
+        throw new Error(
+          "Password must be at least 8 characters long and contain at least one letter and one number"
+        );
+      return true;
+    } catch (error) {
+      toast(
+        error instanceof Error ? error.message : "Error validating credentials",
+        {
+          duration: 5000,
+          position: "bottom-right",
+        }
+      );
+      return false;
+    }
+  };
+
   const handleSignup = async () => {
     try {
       setLoading(true);
+
+      const verifiedCredentials = verifyCredentials(username, password, email);
+      if (!verifiedCredentials) return;
+
       const fd = new FormData();
-      fd.append("username", username);
+      fd.append("username", username.toUpperCase());
       fd.append("password", password);
       fd.append("email", email);
 
@@ -69,7 +111,7 @@ const JoinButton = () => {
     // replace with actual OTP verification logic
     try {
       setLoading(true);
-      const userEmail = localStorage.getItem("userEmail");
+      const userEmail = email || localStorage.getItem("userEmail");
       if (!userEmail) throw new Error("Error Getting User Info");
       const res = await verifyEmail(userEmail, otp);
 
@@ -89,6 +131,45 @@ const JoinButton = () => {
     }
   };
 
+  const handleSignIn = async () => {
+    try {
+      setLoading(true);
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (res?.error) {
+        throw new Error(res.error);
+      }
+      if (res?.ok) {
+        toast("Logged in successfully", {
+          duration: 3000,
+          position: "bottom-right",
+        });
+        setEmail("");
+        setPassword("");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message === "email_not_verified") {
+        toast("Please verify your email first", {
+          duration: 5000,
+          position: "bottom-right",
+        });
+        setForm("otp");
+        // send otp to email
+        sendOtpToEmail(email);
+      } else {
+        toast(error instanceof Error ? error.message : "Error signing in", {
+          duration: 5000,
+          position: "bottom-right",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (form === "signup") {
@@ -96,8 +177,18 @@ const JoinButton = () => {
     } else if (form === "otp") {
       handleOtpVerify();
     } else {
-      // Handle login
-      console.log("Logging in:", { username, password });
+      handleSignIn();
+    }
+  };
+
+  const sendOtpToEmail = async (email: string) => {
+    try {
+      await sendOtp(email);
+    } catch (error) {
+      toast(error instanceof Error ? error.message : "Error sending OTP", {
+        duration: 5000,
+        position: "bottom-right",
+      });
     }
   };
 
@@ -162,15 +253,16 @@ const JoinButton = () => {
           {form === "signup" && (
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-bold">
-                Email
+                Username
               </Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                className="border-x-0 border-t-0 border-b placeholder:uppercase rounded-sm border-violet-500 w-full p-3 bg-black/80
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Create a username"
+                required
+                className="uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
                 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
             </div>
@@ -179,15 +271,15 @@ const JoinButton = () => {
             <>
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-sm font-bold">
-                  Username
+                  Email
                 </Label>
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
-                  className="border-x-0 border-t-0 border-b rounded-sm border-violet-500 uppercase w-full p-3 bg-black/80
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  className="placeholder:uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
                 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
               </div>
