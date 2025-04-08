@@ -1,11 +1,10 @@
 import * as React from "react";
 
 interface EmailTemplateProps {
-  name: string;
   otp: string;
 }
 
-export const EmailTemplate: React.FC<EmailTemplateProps> = ({ name, otp }) => (
+export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
   <div
     style={{
       fontFamily: "Arial, sans-serif",
@@ -28,11 +27,18 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ name, otp }) => (
         marginBottom: "24px",
       }}
     >
-      Welcome, {name}!
+      Welcome, Soldier!
     </h1>
 
-    <p style={{ fontSize: "16px", lineHeight: "1.6", textAlign: "center" }}>
-      Your One-Time Password (OTP) for verification is:
+    <p
+      style={{
+        fontSize: "16px",
+        lineHeight: "1.6",
+        textAlign: "center",
+        color: "#fff",
+      }}
+    >
+      Verify your email to claim your username! Your OTP is:
     </p>
 
     <div
@@ -53,8 +59,15 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ name, otp }) => (
       {otp}
     </div>
 
-    <p style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}>
-      This OTP is valid for 30 minutes. Please do not share it with anyone.
+    <p
+      style={{
+        fontSize: "14px",
+        textAlign: "center",
+        opacity: 0.8,
+        color: "#fff",
+      }}
+    >
+      This OTP is valid for 10 minutes. Please do not share it with anyone.
     </p>
 
     <p
@@ -63,6 +76,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ name, otp }) => (
         textAlign: "center",
         marginTop: "32px",
         opacity: 0.6,
+        color: "#fff",
       }}
     >
       If you didn&apos;t request this, you can safely ignore this email.
