@@ -27,7 +27,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
         marginBottom: "24px",
       }}
     >
-      Welcome, Soldier!
+      Welcome Soldier!
     </h1>
 
     <p
