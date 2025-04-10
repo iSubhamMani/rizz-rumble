@@ -26,6 +26,7 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { verifyEmail } from "@/actions/email/verify";
 import { sendOtp } from "@/actions/email/send";
+import { useRouter } from "next/navigation";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -35,6 +36,7 @@ const JoinButton = () => {
   const [form, setForm] = useState<"login" | "signup" | "otp">("login");
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
+  const router = useRouter();
 
   const verifyCredentials = (
     username: string,
@@ -146,6 +148,7 @@ const JoinButton = () => {
         });
         setEmail("");
         setPassword("");
+        router.replace("/play");
       }
     } catch (error) {
       if (error instanceof Error && error.message === "email_not_verified") {
@@ -226,7 +229,7 @@ const JoinButton = () => {
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {form === "otp" && (
-            <div className="space-y-2">
+            <div className="space-y-6">
               <InputOTP
                 value={otp}
                 onChange={(value) => setOtp(value)}
@@ -245,6 +248,15 @@ const JoinButton = () => {
                   ))}
                 </InputOTPGroup>
               </InputOTP>
+              <p className="text-sm text-center">
+                Didn&apos;t receive the OTP?{" "}
+                <span
+                  className="text-violet-400 font-bold cursor-pointer hover:underline"
+                  onClick={() => sendOtpToEmail(email)}
+                >
+                  Resend OTP
+                </span>
+              </p>
             </div>
           )}
           {form === "signup" && (
