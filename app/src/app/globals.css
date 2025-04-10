@@ -138,7 +138,8 @@
 }
 
 .fade-pullup {
-  animation: fadeAndPullUp 0.3s ease-out forwards 0.5s,
+  animation:
+    fadeAndPullUp 0.3s ease-out forwards 0.5s,
     blurAnimation 0.3s ease-out forwards 0.5s;
   opacity: 0;
 }
