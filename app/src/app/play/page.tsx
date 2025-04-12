@@ -1,5 +1,4 @@
 import Leaderboard from "@/components/Leaderboard";
-import { Particles } from "@/components/magicui/particles";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
 import React from "react";
@@ -7,13 +6,30 @@ import { authOptions } from "../api/auth/[...nextauth]/config";
 import { UserModel } from "@/models/User";
 import { connectDB } from "@/lib/db";
 import EditProfileDialog from "@/components/EditProfileDialog";
+import { Particles } from "@/components/magicui/particles";
 
 const Play = async () => {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return (
-      <div className="min-h-screen text-white relative bg-gradient-to-tl from-black via-[#2a2337] to-black overflow-hidden">
-        <h1 className="text-3xl">Please login to play</h1>
+      <div className="flex flex-col h-screen text-white relative overflow-hidden">
+        <div
+          className="absolute inset-0 -z-50"
+          style={{
+            background: `
+              radial-gradient(
+                circle at 120% 50%, 
+                rgba(167, 139, 250, 0.9) 20%, 
+                rgba(84, 67, 135, 0.9) 30%, 
+                rgba(0, 0, 0, 1.0) 80%, 
+                #000000 80%
+              )
+            `,
+          }}
+        />
+        <div className="flex items-center justify-center h-full">
+          <h1 className="text-4xl font-bold">Please log in to play</h1>
+        </div>
       </div>
     );
   }
@@ -23,21 +39,39 @@ const Play = async () => {
   const user = await UserModel.findById(userId);
 
   return (
-    <div className="min-h-screen text-white relative bg-gradient-to-tl from-black via-[#2a2337] to-black overflow-hidden">
-      <div className="flex justify-end pr-8 pt-4">
-        <EditProfileDialog props={JSON.stringify(user)} />
-      </div>
+    <div className="flex flex-col h-screen text-white relative overflow-hidden">
+      {/* Background with a dark base and radial gradient for light convergence */}
+      <div
+        className="absolute inset-0 -z-50"
+        style={{
+          background: `
+              radial-gradient(
+                circle at 120% 50%, 
+                rgba(167, 139, 250, 0.9) 20%, 
+                rgba(84, 67, 135, 0.9) 30%, 
+                rgba(0, 0, 0, 1.0) 80%, 
+                #000000 80%
+              )
+            `,
+        }}
+      />
+
+      {/* Particle effect */}
       <Particles
         className="absolute inset-0 z-0"
-        quantity={80}
+        quantity={30}
         ease={80}
         color={"#a78bfa"}
         refresh
       />
 
-      <div className="flex">
-        <div className="flex-[2] w-full flex flex-col gap-6 p-8">
-          <div className="border border-violet-900/60 transition-all duration-200 ease-in-out hover:border-violet-900/80 shadow-xl w-[560px] h-[280px] relative overflow-hidden cursor-pointer flex items-start group">
+      {/* Content */}
+      <div className="flex justify-end pr-8 pt-4">
+        <EditProfileDialog props={JSON.stringify(user)} />
+      </div>
+      <main className="flex flex-1">
+        <div className="flex-[2] w-full flex flex-col lg:flex-row gap-6 p-8">
+          <div className="border border-violet-900/60 transition-all duration-200 ease-in-out hover:border-violet-900/80 shadow-xl max-w-[560px] max-h-[280px] relative overflow-hidden cursor-pointer flex items-start group">
             {/* Border animation effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div className="absolute inset-0 border-2 border-violet-600 animate-pulse"></div>
@@ -69,7 +103,7 @@ const Play = async () => {
             {/* Add a subtle glow effect on hover */}
             <div className="absolute inset-0 bg-violet-900/0 group-hover:bg-violet-900/10 transition-all duration-300"></div>
           </div>
-          <div className="border border-violet-900/60 transition-all duration-200 ease-in-out hover:border-violet-900/80 shadow-xl w-[560px] h-[280px] relative overflow-hidden cursor-pointer flex items-start group">
+          <div className="border border-violet-900/60 transition-all duration-200 ease-in-out hover:border-violet-900/80 shadow-xl max-w-[560px] max-h-[280px] relative overflow-hidden cursor-pointer flex items-start group">
             {/* Border animation effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div className="absolute inset-0 border-2 border-violet-600 animate-pulse"></div>
@@ -103,7 +137,12 @@ const Play = async () => {
           </div>
         </div>
         <Leaderboard />
-      </div>
+      </main>
+      <footer className="px-8 py-4">
+        <p className="text-sm text-white">
+          © {new Date().getFullYear()} Prompt Brawl. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
