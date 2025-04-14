@@ -23,12 +23,16 @@ Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to p
    npm install
    ```
 4. Start the application:
+
    For next app:
+
    ```bash
    cd app
    npm run dev
    ```
+
    For server:
+
    ```bash
    cd server
    npm run dev
