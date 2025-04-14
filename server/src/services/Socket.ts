@@ -10,6 +10,7 @@ const sub = new Redis(process.env.REDIS_URL!);
 
 class SocketService {
   private _io: Server;
+  private matchmakingTimeouts = new Map<string, NodeJS.Timeout>();
 
   constructor() {
     console.log("Socket Service initialized");
@@ -44,12 +45,38 @@ class SocketService {
           "waitingPlayer",
           JSON.stringify(player),
           "EX",
-          60, // expire in 60 seconds
+          70, // expire in 70 seconds
           "NX"
         );
 
         if (success) {
           console.log("Added player to waiting lobby", player_id);
+
+          // add a timeout to remove the player from waiting lobby
+
+          const matchmakingTimeout = setTimeout(async () => {
+            const stillWaiting = await waitingLobby.get("waitingPlayer");
+
+            if (stillWaiting) {
+              const waitingPlayerInfo = JSON.parse(stillWaiting);
+
+              if (waitingPlayerInfo.player_id === player_id) {
+                const socketToNotify = this._io.sockets.sockets.get(
+                  waitingPlayerInfo.socket_id
+                );
+
+                if (socketToNotify) {
+                  socketToNotify.emit("error:matchmakingTimeout");
+                  await waitingLobby.del("waitingPlayer");
+                }
+              }
+            }
+
+            this.matchmakingTimeouts.delete(socket.id);
+          }, 60 * 1000); // 60 seconds
+
+          this.matchmakingTimeouts.set(socket.id, matchmakingTimeout);
+
           return;
         }
 
@@ -155,6 +182,14 @@ class SocketService {
         ) {
           await waitingLobby.del("waitingPlayer");
           console.log("Removed disconnected player from waiting lobby");
+        }
+
+        // Clear the matchmaking timeout
+        const timeout = this.matchmakingTimeouts.get(socket.id);
+        if (timeout) {
+          clearTimeout(timeout);
+          this.matchmakingTimeouts.delete(socket.id);
+          console.log("Cleared matchmaking timeout for", socket.id);
         }
       });
     });
