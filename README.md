@@ -1,4 +1,4 @@
-# Chat Duel
+# Prompt Brawl
 
 Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to provide a fun and engaging experience to test your prompt writing skills.
 
