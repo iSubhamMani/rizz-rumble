@@ -46,11 +46,27 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     // Handle the match found event
   }, []);
 
+  const onMatchmakingError = useCallback(() => {
+    console.error("Matchmaking error");
+    // Handle the matchmaking error event
+  }, []);
+
+  const onMatchmakingTimeout = useCallback(() => {
+    alert("Matchmaking timeout. No match found.");
+  }, []);
+
+  const onAlreadyInLobby = useCallback(() => {
+    console.error("Already in lobby");
+    // Handle the already in lobby event
+  }, []);
+
   useEffect(() => {
-    console.log("SOCKET RUNNING ON: ", process.env.NEXT_PUBLIC_BACKEND_URL);
     const _socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 
     _socket.on("event:matchFound", onMatchFound);
+    _socket.on("error:matchmaking", onMatchmakingError);
+    _socket.on("error:matchmakingTimeout", onMatchmakingTimeout);
+    _socket.on("error:alreadyInLobby", onAlreadyInLobby);
 
     setSocket(_socket);
 
