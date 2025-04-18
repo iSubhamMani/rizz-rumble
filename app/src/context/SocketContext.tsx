@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   createContext,
   ReactNode,
@@ -16,6 +17,10 @@ interface SocketProviderProps {
 }
 
 interface SocketContextType {
+  inMatchmaking: boolean;
+  matchFound: boolean;
+  matchmakingError: boolean;
+  roomId: string | null;
   startMatchmaking: (player_id: string) => any;
 }
 
@@ -31,19 +36,30 @@ export const useSocket = () => {
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket>();
+  const [inMatchmaking, setInMatchmaking] = useState(false);
+  const [matchFound, setMatchFound] = useState(false);
+  const [matchmakingError, setMatchmakingError] = useState(false);
+  const [roomId, setRoomId] = useState<string | null>(null);
 
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
     (player_id: string) => {
       if (socket) {
         socket.emit("event:matchmaking", { player_id });
+        setInMatchmaking(true);
       }
     },
     [socket]
   );
 
   const onMatchFound = useCallback((matchInfo: any) => {
-    console.log("Match found", matchInfo);
-    // Handle the match found event
+    setInMatchmaking(false);
+
+    const { roomId } = matchInfo as { roomId: string };
+
+    if (roomId) {
+      setRoomId(roomId);
+      setMatchFound(true);
+    }
   }, []);
 
   const onMatchmakingError = useCallback(() => {
@@ -78,7 +94,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ startMatchmaking }}>
+    <SocketContext.Provider
+      value={{
+        startMatchmaking,
+        inMatchmaking,
+        matchFound,
+        matchmakingError,
+        roomId,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );
