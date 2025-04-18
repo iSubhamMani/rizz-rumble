@@ -63,11 +63,17 @@ export default {
       animation: {
         grid: "grid 15s linear infinite",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        "scan-move": "scanMove 1.6s ease-in-out infinite",
       },
       keyframes: {
         "caret-blink": {
           "0%,70%,100%": { opacity: "1" },
           "20%,50%": { opacity: "0" },
+        },
+        scanMove: {
+          "0%": { left: "-33%", width: "5%" },
+          "50%": { width: "40%" },
+          "100%": { left: "100%", width: "5%" },
         },
         grid: {
           "0%": {

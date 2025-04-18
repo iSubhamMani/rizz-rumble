@@ -69,17 +69,10 @@ const Play = async () => {
       <div className="flex justify-end pr-8 pt-4">
         <EditProfileDialog props={JSON.stringify(user)} />
       </div>
-      <main className="flex flex-1">
-        <div className="flex-[2] w-full flex flex-col lg:flex-row gap-6 p-8">
-          <GameModes player={JSON.stringify(user)} />
-        </div>
+      <main className="flex flex-col lg:flex-row flex-1">
+        <GameModes player={JSON.stringify(user)} />
         <Leaderboard />
       </main>
-      <footer className="px-8 py-4">
-        <p className="text-sm text-white">
-          © {new Date().getFullYear()} Prompt Brawl. All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 };
