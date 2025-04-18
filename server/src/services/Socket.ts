@@ -4,6 +4,11 @@ import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 dotenv.config();
 
+interface Player {
+  player_id: string;
+  socket_id: string;
+}
+
 const waitingLobby = new Redis(process.env.REDIS_URL!);
 const pub = new Redis(process.env.REDIS_URL!);
 const sub = new Redis(process.env.REDIS_URL!);
@@ -36,7 +41,7 @@ class SocketService {
 
       if (!waitingPlayer) {
         // if not, add the player to redis
-        const player = {
+        const player: Player = {
           player_id,
           socket_id: socket.id,
         };
@@ -104,7 +109,7 @@ class SocketService {
       } else {
         console.log("Match found");
         // if yes, create a game and publish the event
-        const waitingPlayerInfo = JSON.parse(waitingPlayer);
+        const waitingPlayerInfo = JSON.parse(waitingPlayer) as Player;
 
         if (waitingPlayerInfo.player_id === player_id) {
           const playerSocket = this._io.sockets.sockets.get(socket.id);
@@ -132,7 +137,10 @@ class SocketService {
 
   private async emitMatchFound(message: string) {
     const parsedMessage = JSON.parse(message);
-    const { player1, player2 } = parsedMessage;
+    const { player1, player2 } = parsedMessage as {
+      player1: Player;
+      player2: Player;
+    };
     const player1Socket = this._io.sockets.sockets.get(player1.socket_id);
     const player2Socket = this._io.sockets.sockets.get(player2.socket_id);
 
@@ -140,14 +148,12 @@ class SocketService {
 
     if (player1Socket) {
       player1Socket.emit("event:matchFound", {
-        opponent: player2,
         roomId,
       });
     }
 
     if (player2Socket) {
       player2Socket.emit("event:matchFound", {
-        opponent: player1,
         roomId,
       });
     }
@@ -170,6 +176,10 @@ class SocketService {
 
         const { player_id } = parsed;
         this.tryMatchmaking(player_id, socket);
+      });
+
+      socket.on("event:cancelMatchmaking", (message) => {
+        // TODO
       });
 
       socket.on("disconnect", async () => {
