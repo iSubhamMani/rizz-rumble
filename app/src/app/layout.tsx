@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${anton.variable} ${raleway.variable} uppercase antialiased`}
       >
-        <Toaster />
+        <Toaster position="top-center" />
 
         {children}
       </body>
