@@ -15,7 +15,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { Swords, Upload } from "lucide-react";
 
-const EditProfileDialog = ({ props }: { props: string }) => {
+const TopPlayerInfo = ({ props }: { props: string }) => {
   const user = JSON.parse(props);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,10 +27,18 @@ const EditProfileDialog = ({ props }: { props: string }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Avatar className="text-black cursor-pointer">
-          <AvatarImage src={user.avatarUrl || "/default_avatar.jpg"} />
-          <AvatarFallback>TN</AvatarFallback>
-        </Avatar>
+        <div className="max-w-xs z-50 cursor-pointer flex items-start gap-4">
+          <Avatar className="text-black size-12">
+            <AvatarImage src={user.avatarUrl || "/default_avatar.jpg"} />
+            <AvatarFallback>TN</AvatarFallback>
+          </Avatar>
+          <div className="space-y-2">
+            <h1 className="text-sm font-bold line-clamp-1">{user.username}</h1>
+            <p className="w-[120px] text-xs text-center rounded-full border-2 px-2 py-1 border-violet-400">
+              Level 12
+            </p>
+          </div>
+        </div>
       </DialogTrigger>
 
       <DialogContent
@@ -90,4 +98,4 @@ const EditProfileDialog = ({ props }: { props: string }) => {
   );
 };
 
-export default EditProfileDialog;
+export default TopPlayerInfo;
