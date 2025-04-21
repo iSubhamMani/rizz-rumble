@@ -67,7 +67,14 @@ const JoinButton = () => {
         error instanceof Error ? error.message : "Error validating credentials",
         {
           duration: 5000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "#EE4B2B",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         }
       );
       return false;
@@ -91,7 +98,14 @@ const JoinButton = () => {
       if (res.success) {
         toast(res.message, {
           duration: 3000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         });
         setPassword("");
         setUsername("");
@@ -100,7 +114,14 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error signing up", {
         duration: 5000,
-        position: "bottom-right",
+        style: {
+          backgroundColor: "#EE4B2B",
+          color: "white",
+          border: "1px solid rgba(139, 92, 246, 0.5)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "8px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+        },
       });
     } finally {
       setLoading(false);
@@ -118,13 +139,30 @@ const JoinButton = () => {
       if (res.success) {
         toast("OTP verified successfully", {
           duration: 3000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         });
         setForm("login");
         setOtp("");
       }
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Error Verifying Email");
+      toast(error instanceof Error ? error.message : "Error Verifying Email", {
+        duration: 3000,
+        style: {
+          backgroundColor: "#EE4B2B",
+          color: "white",
+          border: "1px solid rgba(139, 92, 246, 0.5)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "8px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -144,7 +182,14 @@ const JoinButton = () => {
       if (res?.ok) {
         toast("Logged in successfully", {
           duration: 3000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         });
         setEmail("");
         setPassword("");
@@ -154,7 +199,14 @@ const JoinButton = () => {
       if (error instanceof Error && error.message === "email_not_verified") {
         toast("Please verify your email first", {
           duration: 5000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "#EE4B2B",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         });
         setForm("otp");
         // send otp to email
@@ -162,7 +214,14 @@ const JoinButton = () => {
       } else {
         toast(error instanceof Error ? error.message : "Error signing in", {
           duration: 5000,
-          position: "bottom-right",
+          style: {
+            backgroundColor: "#EE4B2B",
+            color: "white",
+            border: "1px solid rgba(139, 92, 246, 0.5)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+          },
         });
       }
     } finally {
@@ -187,7 +246,14 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error sending OTP", {
         duration: 5000,
-        position: "bottom-right",
+        style: {
+          backgroundColor: "#EE4B2B",
+          color: "white",
+          border: "1px solid rgba(139, 92, 246, 0.5)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "8px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+        },
       });
     }
   };
