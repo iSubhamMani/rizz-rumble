@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   createContext,
   ReactNode,
@@ -19,7 +18,8 @@ interface SocketProviderProps {
 interface SocketContextType {
   inMatchmaking: boolean;
   matchFound: boolean;
-  matchmakingError: boolean;
+  matchmakingError: string | null;
+  matchmakingTimeout: boolean;
   roomId: string | null;
   startMatchmaking: (player_id: string) => any;
 }
@@ -38,12 +38,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [socket, setSocket] = useState<Socket>();
   const [inMatchmaking, setInMatchmaking] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
-  const [matchmakingError, setMatchmakingError] = useState(false);
+  const [matchmakingError, setMatchmakingError] = useState<string | null>(null);
+  const [matchmakingTimeout, setMatchmakingTimeout] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
 
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
     (player_id: string) => {
       if (socket) {
+        setMatchFound(false);
+        setMatchmakingError(null);
+        setMatchmakingTimeout(false);
+        setRoomId(null);
         socket.emit("event:matchmaking", { player_id });
         setInMatchmaking(true);
       }
@@ -63,17 +68,21 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []);
 
   const onMatchmakingError = useCallback(() => {
-    console.error("Matchmaking error");
-    // Handle the matchmaking error event
+    setMatchFound(false);
+    setInMatchmaking(false);
+    setMatchmakingError("Matchmaking error");
   }, []);
 
   const onMatchmakingTimeout = useCallback(() => {
-    alert("Matchmaking timeout. No match found.");
+    setMatchFound(false);
+    setInMatchmaking(false);
+    setMatchmakingTimeout(true);
   }, []);
 
   const onAlreadyInLobby = useCallback(() => {
-    console.error("Already in lobby");
-    // Handle the already in lobby event
+    setMatchFound(false);
+    setInMatchmaking(false);
+    setMatchmakingError("You are already in a lobby");
   }, []);
 
   useEffect(() => {
@@ -101,6 +110,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         matchFound,
         matchmakingError,
         roomId,
+        matchmakingTimeout,
       }}
     >
       {children}
