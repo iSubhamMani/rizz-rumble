@@ -2,6 +2,9 @@ import { Server, Socket } from "socket.io";
 import { Redis } from "ioredis";
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
+import { UserModel } from "../models/User";
+import { connectDB } from "./db";
+import mongoose from "mongoose";
 dotenv.config();
 
 interface Player {
@@ -165,7 +168,8 @@ class SocketService {
     io.on("connect", (socket) => {
       console.log("New client connected", socket.id);
 
-      socket.on("event:matchmaking", (message) => {
+      socket.on("event:matchmaking", async (message) => {
+        await connectDB();
         let parsed;
         try {
           parsed = typeof message === "string" ? JSON.parse(message) : message;
@@ -174,12 +178,54 @@ class SocketService {
           return;
         }
 
+        // check for authenticated user
         const { player_id } = parsed;
+
+        // check if the id is valid object id
+        if (!mongoose.Types.ObjectId.isValid(player_id)) {
+          socket.emit("error:unauthorized");
+          return;
+        }
+
+        let user;
+        try {
+          user = await UserModel.findById(player_id);
+        } catch (error) {
+          console.error("Error finding user", error);
+          socket.emit("error:matchmaking");
+          return;
+        }
+
+        if (!user) {
+          socket.emit("error:unauthorized");
+          return;
+        }
+
         this.tryMatchmaking(player_id, socket);
       });
 
-      socket.on("event:cancelMatchmaking", (message) => {
-        // TODO
+      socket.on("event:cancelMatchmaking", async (message) => {
+        const parsed =
+          typeof message === "string" ? JSON.parse(message) : message;
+        const { player_id } = parsed;
+
+        // Clear the matchmaking timeout
+        const timeout = this.matchmakingTimeouts.get(socket.id);
+        if (timeout) {
+          clearTimeout(timeout);
+          this.matchmakingTimeouts.delete(socket.id);
+          console.log("Cleared matchmaking timeout for", socket.id);
+        }
+
+        // Remove the player from waiting lobby
+        const waitingPlayer = await waitingLobby.get("waitingPlayer");
+        if (waitingPlayer) {
+          const waitingPlayerInfo = JSON.parse(waitingPlayer);
+          if (waitingPlayerInfo.player_id === player_id) {
+            await waitingLobby.del("waitingPlayer");
+            console.log("Removed player from waiting lobby", player_id);
+          }
+        }
       });
 
       socket.on("disconnect", async () => {
