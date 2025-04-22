@@ -22,6 +22,7 @@ interface SocketContextType {
   matchmakingTimeout: boolean;
   roomId: string | null;
   startMatchmaking: (player_id: string) => any;
+  cancelMatchmaking: (player_id: string) => any;
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
@@ -56,6 +57,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     [socket]
   );
 
+  const cancelMatchmaking: SocketContextType["cancelMatchmaking"] = useCallback(
+    (player_id: string) => {
+      if (socket) {
+        socket.emit("event:cancelMatchmaking", { player_id });
+        setInMatchmaking(false);
+        setMatchFound(false);
+        setMatchmakingError(null);
+        setMatchmakingTimeout(false);
+        setRoomId(null);
+      }
+    },
+    [socket]
+  );
+
   const onMatchFound = useCallback((matchInfo: any) => {
     setInMatchmaking(false);
 
@@ -70,7 +85,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const onMatchmakingError = useCallback(() => {
     setMatchFound(false);
     setInMatchmaking(false);
-    setMatchmakingError("Matchmaking error");
+    setMatchmakingError(
+      "An error occurred while matchmaking. Please try again."
+    );
   }, []);
 
   const onMatchmakingTimeout = useCallback(() => {
@@ -85,9 +102,34 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     setMatchmakingError("You are already in a lobby");
   }, []);
 
+  const onUnauthorized = useCallback((socket: Socket) => {
+    setMatchFound(false);
+    setInMatchmaking(false);
+    setMatchmakingError("You are not authorized to play");
+    setMatchmakingTimeout(false);
+    setRoomId(null);
+    disconnectSocket(socket);
+  }, []);
+
+  const disconnectSocket = useCallback(
+    (_socket: Socket) => {
+      if (socket) {
+        _socket.disconnect();
+        _socket.off("error:unauthorized", onUnauthorized);
+        _socket.off("event:matchFound", onMatchFound);
+        _socket.off("error:matchmaking", onMatchmakingError);
+        _socket.off("error:matchmakingTimeout", onMatchmakingTimeout);
+        _socket.off("error:alreadyInLobby", onAlreadyInLobby);
+        setSocket(undefined);
+      }
+    },
+    [socket]
+  );
+
   useEffect(() => {
     const _socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 
+    _socket.on("error:unauthorized", onUnauthorized);
     _socket.on("event:matchFound", onMatchFound);
     _socket.on("error:matchmaking", onMatchmakingError);
     _socket.on("error:matchmakingTimeout", onMatchmakingTimeout);
@@ -96,9 +138,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     setSocket(_socket);
 
     return () => {
-      _socket.disconnect();
-      _socket.off("event:matchFound", onMatchFound);
-      setSocket(undefined);
+      disconnectSocket(_socket);
     };
   }, []);
 
@@ -106,6 +146,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     <SocketContext.Provider
       value={{
         startMatchmaking,
+        cancelMatchmaking,
         inMatchmaking,
         matchFound,
         matchmakingError,
