@@ -5,12 +5,14 @@ import { Bot, Swords, Users } from "lucide-react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import ButtonPrimary from "./ButtonPrimary";
 
 const GameModes = ({ player }: { player: string }) => {
   const playerInfo = JSON.parse(player);
 
   const {
     startMatchmaking,
+    cancelMatchmaking,
     inMatchmaking,
     roomId,
     matchFound,
@@ -26,8 +28,24 @@ const GameModes = ({ player }: { player: string }) => {
   }, [matchFound, roomId, router]);
 
   useEffect(() => {
+    if (matchmakingError) {
+      toast(matchmakingError, {
+        duration: 5000,
+        style: {
+          backgroundColor: "rgba(255, 49, 49, 0.6)",
+          color: "white",
+          border: "1px solid rgba(139, 92, 246, 0.5)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "8px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+        },
+      });
+    }
+  }, [matchmakingError]);
+
+  useEffect(() => {
     if (matchmakingTimeout) {
-      toast("Couldn't find a match. Please try again.", {
+      toast("Couldn't find a match. Try again later.", {
         duration: 5000,
         style: {
           backgroundColor: "rgba(255, 49, 49, 0.6)",
@@ -75,13 +93,18 @@ const GameModes = ({ player }: { player: string }) => {
         </button>
       </div>
       {inMatchmaking && (
-        <div className="mt-8">
+        <div className="mt-8 fade-pullup">
           <p className="text-base font-bold animate-pulse">
             <Swords className="inline mr-2 text-violet-400 size-5" />
             Finding a match...
           </p>
           <div className="mt-4 relative w-full h-0.5 overflow-hidden bg-violet-500/10 rounded-full">
             <div className="absolute h-full w-1/3 bg-violet-500 rounded-full animate-scan-move"></div>
+          </div>
+          <div className="flex justify-end mt-6">
+            <ButtonPrimary onClick={() => cancelMatchmaking(playerInfo._id)}>
+              Cancel
+            </ButtonPrimary>
           </div>
         </div>
       )}
