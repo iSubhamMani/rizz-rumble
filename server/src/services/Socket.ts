@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { UserModel } from "../models/User";
 import { connectDB } from "./db";
 import mongoose from "mongoose";
+import { MatchModel, MatchStatus } from "../models/Match";
 dotenv.config();
 
 interface Player {
@@ -147,17 +148,33 @@ class SocketService {
     const player1Socket = this._io.sockets.sockets.get(player1.socket_id);
     const player2Socket = this._io.sockets.sockets.get(player2.socket_id);
 
-    const roomId = uuid();
+    const matchId = uuid();
+
+    try {
+      await MatchModel.create({
+        matchId,
+        users: [player1.player_id, player2.player_id],
+        rounds: [],
+        currentRound: 0,
+        status: MatchStatus.WAITING,
+        overallWinner: null,
+      });
+    } catch (error) {
+      console.error("Error creating match", error);
+      if (player1Socket) player1Socket.emit("error:matchmaking");
+      if (player2Socket) player2Socket.emit("error:matchmaking");
+      return;
+    }
 
     if (player1Socket) {
       player1Socket.emit("event:matchFound", {
-        roomId,
+        matchId,
       });
     }
 
     if (player2Socket) {
       player2Socket.emit("event:matchFound", {
-        roomId,
+        matchId,
       });
     }
   }
