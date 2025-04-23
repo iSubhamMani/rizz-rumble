@@ -20,7 +20,7 @@ interface SocketContextType {
   matchFound: boolean;
   matchmakingError: string | null;
   matchmakingTimeout: boolean;
-  roomId: string | null;
+  matchId: string | null;
   startMatchmaking: (player_id: string) => any;
   cancelMatchmaking: (player_id: string) => any;
 }
@@ -41,7 +41,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [matchFound, setMatchFound] = useState(false);
   const [matchmakingError, setMatchmakingError] = useState<string | null>(null);
   const [matchmakingTimeout, setMatchmakingTimeout] = useState(false);
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const [matchId, setMatchId] = useState<string | null>(null);
 
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
     (player_id: string) => {
@@ -49,7 +49,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setMatchFound(false);
         setMatchmakingError(null);
         setMatchmakingTimeout(false);
-        setRoomId(null);
+        setMatchId(null);
         socket.emit("event:matchmaking", { player_id });
         setInMatchmaking(true);
       }
@@ -65,7 +65,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setMatchFound(false);
         setMatchmakingError(null);
         setMatchmakingTimeout(false);
-        setRoomId(null);
+        setMatchId(null);
       }
     },
     [socket]
@@ -74,10 +74,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const onMatchFound = useCallback((matchInfo: any) => {
     setInMatchmaking(false);
 
-    const { roomId } = matchInfo as { roomId: string };
+    const { matchId } = matchInfo as { matchId: string };
 
-    if (roomId) {
-      setRoomId(roomId);
+    if (matchId) {
+      setMatchId(matchId);
       setMatchFound(true);
     }
   }, []);
@@ -107,7 +107,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     setInMatchmaking(false);
     setMatchmakingError("You are not authorized to play");
     setMatchmakingTimeout(false);
-    setRoomId(null);
+    setMatchId(null);
     disconnectSocket(socket);
   }, []);
 
@@ -150,7 +150,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         inMatchmaking,
         matchFound,
         matchmakingError,
-        roomId,
+        matchId,
         matchmakingTimeout,
       }}
     >
