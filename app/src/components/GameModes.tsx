@@ -2,62 +2,12 @@
 
 import { useSocket } from "@/context/SocketContext";
 import { Bot, Swords, Users } from "lucide-react";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import ButtonPrimary from "./ButtonPrimary";
 
 const GameModes = ({ player }: { player: string }) => {
   const playerInfo = JSON.parse(player);
 
-  const {
-    startMatchmaking,
-    cancelMatchmaking,
-    inMatchmaking,
-    roomId,
-    matchFound,
-    matchmakingError,
-    matchmakingTimeout,
-  } = useSocket();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (matchFound && roomId) {
-      router.push(`/battle/${roomId}`);
-    }
-  }, [matchFound, roomId, router]);
-
-  useEffect(() => {
-    if (matchmakingError) {
-      toast(matchmakingError, {
-        duration: 5000,
-        style: {
-          backgroundColor: "rgba(255, 49, 49, 0.6)",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
-      });
-    }
-  }, [matchmakingError]);
-
-  useEffect(() => {
-    if (matchmakingTimeout) {
-      toast("Couldn't find a match. Try again later.", {
-        duration: 5000,
-        style: {
-          backgroundColor: "rgba(255, 49, 49, 0.6)",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
-      });
-    }
-  }, [matchmakingTimeout]);
+  const { startMatchmaking, cancelMatchmaking, inMatchmaking } = useSocket();
 
   return (
     <div className="flex flex-col flex-[2] w-full">
