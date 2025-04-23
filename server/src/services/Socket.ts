@@ -1,25 +1,16 @@
-import { Server, Socket } from "socket.io";
-import { Redis } from "ioredis";
-import { v4 as uuid } from "uuid";
+import { Server } from "socket.io";
 import dotenv from "dotenv";
-import { UserModel } from "../models/User";
-import { connectDB } from "./db";
-import mongoose from "mongoose";
-import { MatchModel, MatchStatus } from "../models/Match";
+import RedisService from "./Redis";
+import MatchService from "./Match";
+import MatchmakingService from "./Matchmaking";
+import { checkForValidUser } from "../utils/validUser";
 dotenv.config();
-
-interface Player {
-  player_id: string;
-  socket_id: string;
-}
-
-const waitingLobby = new Redis(process.env.REDIS_URL!);
-const pub = new Redis(process.env.REDIS_URL!);
-const sub = new Redis(process.env.REDIS_URL!);
 
 class SocketService {
   private _io: Server;
-  private matchmakingTimeouts = new Map<string, NodeJS.Timeout>();
+  private redis;
+  private matchService;
+  private matchmakingService;
 
   constructor() {
     console.log("Socket Service initialized");
@@ -31,152 +22,19 @@ class SocketService {
       },
     });
 
-    sub.subscribe("game:matchmaking");
+    this.redis = new RedisService();
+    this.matchService = new MatchService();
+    this.matchmakingService = new MatchmakingService(
+      this._io,
+      this.redis,
+      this.matchService
+    );
+
+    this.redis.getSubscriber().subscribe("game:matchmaking");
   }
 
   get io() {
     return this._io;
-  }
-
-  private async tryMatchmaking(player_id: string, socket: Socket) {
-    try {
-      // check if redis has a waiting player
-      const waitingPlayer = await waitingLobby.get("waitingPlayer");
-
-      if (!waitingPlayer) {
-        // if not, add the player to redis
-        const player: Player = {
-          player_id,
-          socket_id: socket.id,
-        };
-
-        const success = await waitingLobby.set(
-          "waitingPlayer",
-          JSON.stringify(player),
-          "EX",
-          70, // expire in 70 seconds
-          "NX"
-        );
-
-        if (success) {
-          console.log("Added player to waiting lobby", player_id);
-
-          // add a timeout to remove the player from waiting lobby
-
-          const matchmakingTimeout = setTimeout(async () => {
-            const stillWaiting = await waitingLobby.get("waitingPlayer");
-
-            if (stillWaiting) {
-              const waitingPlayerInfo = JSON.parse(stillWaiting);
-
-              if (waitingPlayerInfo.player_id === player_id) {
-                const socketToNotify = this._io.sockets.sockets.get(
-                  waitingPlayerInfo.socket_id
-                );
-
-                if (socketToNotify) {
-                  socketToNotify.emit("error:matchmakingTimeout");
-                  await waitingLobby.del("waitingPlayer");
-                }
-              }
-            }
-
-            this.matchmakingTimeouts.delete(socket.id);
-          }, 60 * 1000); // 60 seconds
-
-          this.matchmakingTimeouts.set(socket.id, matchmakingTimeout);
-
-          return;
-        }
-
-        // means another player is already waiting
-        const newWaitingPlayer = await waitingLobby.get("waitingPlayer");
-        if (!newWaitingPlayer) return;
-
-        const waitingPlayerInfo = JSON.parse(newWaitingPlayer);
-
-        if (waitingPlayerInfo.player_id === player_id) {
-          const playerSocket = this._io.sockets.sockets.get(socket.id);
-          if (playerSocket) playerSocket.emit("error:alreadyInLobby");
-          return;
-        }
-
-        await pub.publish(
-          "game:matchmaking",
-          JSON.stringify({
-            player1: { player_id, socket_id: socket.id },
-            player2: waitingPlayerInfo,
-          })
-        );
-
-        await waitingLobby.del("waitingPlayer");
-      } else {
-        console.log("Match found");
-        // if yes, create a game and publish the event
-        const waitingPlayerInfo = JSON.parse(waitingPlayer) as Player;
-
-        if (waitingPlayerInfo.player_id === player_id) {
-          const playerSocket = this._io.sockets.sockets.get(socket.id);
-          if (playerSocket) playerSocket.emit("error:alreadyInLobby");
-          return;
-        }
-
-        await pub.publish(
-          "game:matchmaking",
-          JSON.stringify({
-            player1: { player_id, socket_id: socket.id },
-            player2: waitingPlayerInfo,
-          })
-        );
-
-        await waitingLobby.del("waitingPlayer");
-      }
-    } catch (error) {
-      console.error("Error in matchmaking", error);
-      const playerSocket = this._io.sockets.sockets.get(socket.id);
-      if (playerSocket) playerSocket.emit("error:matchmaking");
-      return;
-    }
-  }
-
-  private async emitMatchFound(message: string) {
-    const parsedMessage = JSON.parse(message);
-    const { player1, player2 } = parsedMessage as {
-      player1: Player;
-      player2: Player;
-    };
-    const player1Socket = this._io.sockets.sockets.get(player1.socket_id);
-    const player2Socket = this._io.sockets.sockets.get(player2.socket_id);
-
-    const matchId = uuid();
-
-    try {
-      await MatchModel.create({
-        matchId,
-        users: [player1.player_id, player2.player_id],
-        rounds: [],
-        currentRound: 0,
-        status: MatchStatus.WAITING,
-        overallWinner: null,
-      });
-    } catch (error) {
-      console.error("Error creating match", error);
-      if (player1Socket) player1Socket.emit("error:matchmaking");
-      if (player2Socket) player2Socket.emit("error:matchmaking");
-      return;
-    }
-
-    if (player1Socket) {
-      player1Socket.emit("event:matchFound", {
-        matchId,
-      });
-    }
-
-    if (player2Socket) {
-      player2Socket.emit("event:matchFound", {
-        matchId,
-      });
-    }
   }
 
   public initListeners() {
@@ -186,7 +44,6 @@ class SocketService {
       console.log("New client connected", socket.id);
 
       socket.on("event:matchmaking", async (message) => {
-        await connectDB();
         let parsed;
         try {
           parsed = typeof message === "string" ? JSON.parse(message) : message;
@@ -195,82 +52,38 @@ class SocketService {
           return;
         }
 
-        // check for authenticated user
         const { player_id } = parsed;
 
-        // check if the id is valid object id
-        if (!mongoose.Types.ObjectId.isValid(player_id)) {
-          socket.emit("error:unauthorized");
-          return;
-        }
+        checkForValidUser(player_id, socket);
 
-        let user;
-        try {
-          user = await UserModel.findById(player_id);
-        } catch (error) {
-          console.error("Error finding user", error);
-          socket.emit("error:matchmaking");
-          return;
-        }
-
-        if (!user) {
-          socket.emit("error:unauthorized");
-          return;
-        }
-
-        this.tryMatchmaking(player_id, socket);
+        this.matchmakingService.handleMatchmaking(player_id, socket);
       });
 
       socket.on("event:cancelMatchmaking", async (message) => {
-        const parsed =
-          typeof message === "string" ? JSON.parse(message) : message;
-        const { player_id } = parsed;
-
-        // Clear the matchmaking timeout
-        const timeout = this.matchmakingTimeouts.get(socket.id);
-        if (timeout) {
-          clearTimeout(timeout);
-          this.matchmakingTimeouts.delete(socket.id);
-          console.log("Cleared matchmaking timeout for", socket.id);
-        }
-
-        // Remove the player from waiting lobby
-        const waitingPlayer = await waitingLobby.get("waitingPlayer");
-        if (waitingPlayer) {
-          const waitingPlayerInfo = JSON.parse(waitingPlayer);
-          if (waitingPlayerInfo.player_id === player_id) {
-            await waitingLobby.del("waitingPlayer");
-            console.log("Removed player from waiting lobby", player_id);
-          }
-        }
+        this.matchmakingService.cancelMatchmaking(message, socket);
       });
 
       socket.on("disconnect", async () => {
         console.log("Client disconnected", socket.id);
         // Clean up if the disconnecting socket is the one in lobby
-        const waitingPlayer = await waitingLobby.get("waitingPlayer");
+        const waitingPlayer = await this.redis.getWaitingPlayer();
         if (
           waitingPlayer &&
           JSON.parse(waitingPlayer).socket_id === socket.id
         ) {
-          await waitingLobby.del("waitingPlayer");
+          await this.redis.clearWaitingPlayer();
           console.log("Removed disconnected player from waiting lobby");
         }
 
         // Clear the matchmaking timeout
-        const timeout = this.matchmakingTimeouts.get(socket.id);
-        if (timeout) {
-          clearTimeout(timeout);
-          this.matchmakingTimeouts.delete(socket.id);
-          console.log("Cleared matchmaking timeout for", socket.id);
-        }
+        this.matchmakingService.clearMatchmakingTimeout(socket.id);
       });
     });
 
-    sub.on("message", (channel, message) => {
+    this.redis.getSubscriber().on("message", (channel, message) => {
       if (channel === "game:matchmaking") {
         // broadcast this message to both player
-        this.emitMatchFound(message);
+        this.matchmakingService.handleMatchFound(message);
       }
     });
   }
