@@ -102,7 +102,7 @@ class MatchmakingService {
     const player1Socket = this._io.sockets.sockets.get(player1.socket_id);
     const player2Socket = this._io.sockets.sockets.get(player2.socket_id);
 
-    const matchId = this.matchService.createMatch(
+    const matchId = await this.matchService.createMatch(
       player1.player_id,
       player2.player_id
     );
