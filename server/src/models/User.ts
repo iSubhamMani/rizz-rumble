@@ -1,6 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 
-const userSchema = new Schema(
+export interface IUser {
+  username: string;
+  email: string;
+  verified: boolean;
+  password: string;
+  rank: string | null;
+  score: number;
+  otp: string | null;
+  otpExpiry: Date | null;
+}
+
+const userSchema = new Schema<IUser>(
   {
     username: {
       type: String,
@@ -42,4 +53,5 @@ const userSchema = new Schema(
 );
 
 export const UserModel =
-  mongoose.models.User || mongoose.model("User", userSchema);
+  (mongoose.models.User as mongoose.Model<IUser>) ||
+  mongoose.model("User", userSchema);
