@@ -3,7 +3,7 @@ import { IUser } from "./User";
 
 interface IPrompt {
   userId: ObjectId;
-  prompt: String;
+  prompt: string;
 }
 
 interface IRound {
