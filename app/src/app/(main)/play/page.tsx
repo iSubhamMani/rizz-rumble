@@ -6,6 +6,7 @@ import { connectDB } from "@/lib/db";
 import TopPlayerInfo from "@/components/TopPlayerInfo";
 import PlayBtn from "@/components/PlayBtn";
 import Leaderboard from "@/components/Leaderboard";
+import MatchmakingDialog from "@/components/MatchmakingDialog";
 
 const Play = async () => {
   const session = await getServerSession(authOptions);
@@ -62,6 +63,7 @@ const Play = async () => {
       {/* Content */}
       <div className="flex gap-6 items-start justify-between px-8 pt-6">
         <TopPlayerInfo props={JSON.stringify(user)} />
+        <MatchmakingDialog player={JSON.stringify(user)} />
         <Leaderboard />
       </div>
     </main>
