@@ -62,13 +62,13 @@ class MatchService {
       overallWinner: null,
     };
 
-    await this.redis.MatchState.set(matchId, JSON.stringify(initialState));
+    await this.redis.Store.set(matchId, JSON.stringify(initialState));
   }
 
   public async startMatch(matchId: string) {
     console.log("Started match timer for matchId:", matchId);
     const interval = setInterval(async () => {
-      const stateStr = await this.redis.MatchState.get(matchId);
+      const stateStr = await this.redis.Store.get(matchId);
       if (!stateStr) {
         clearInterval(interval);
         return;
@@ -123,11 +123,11 @@ class MatchService {
           }
         );
 
-        await this.redis.MatchState.del(matchId);
+        await this.redis.Store.del(matchId);
         return;
       }
 
-      await this.redis.MatchState.set(matchId, JSON.stringify(state));
+      await this.redis.Store.set(matchId, JSON.stringify(state));
 
       // TODO: judge and generate the new challenge and emit to clients
       const lastRoundDetails = state.roundDetails[state.currentRound - 1];
