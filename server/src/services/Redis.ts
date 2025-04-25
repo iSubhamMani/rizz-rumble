@@ -1,26 +1,33 @@
 import { Redis } from "ioredis";
+import { Player } from "./Matchmaking";
 
 class RedisService {
   private pub: Redis;
   private sub: Redis;
   private store: Redis;
+  private matchStates: Redis;
 
   constructor() {
     this.pub = new Redis(process.env.REDIS_URL!);
     this.sub = new Redis(process.env.REDIS_URL!);
     this.store = new Redis(process.env.REDIS_URL!);
+    this.matchStates = new Redis(process.env.REDIS_URL!);
   }
 
-  public getSubscriber() {
+  public get Subscriber() {
     return this.sub;
   }
 
-  public getPublisher() {
+  public get Publisher() {
     return this.pub;
   }
 
-  public async getWaitingPlayer() {
+  public get WaitingPlayer() {
     return this.store.get("waitingPlayer");
+  }
+
+  public get MatchState() {
+    return this.matchStates;
   }
 
   public async setWaitingPlayer(player_id: string, socket_id: string) {
