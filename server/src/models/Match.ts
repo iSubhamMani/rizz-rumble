@@ -1,19 +1,6 @@
 import mongoose, { ObjectId, Schema } from "mongoose";
-import { IUser } from "./User";
-
-interface IPrompt {
-  userId: ObjectId;
-  prompt: string;
-}
-
-interface IRound {
-  roundNumber: number;
-  prompts: IPrompt[];
-  winner: ObjectId;
-}
 
 export enum MatchStatus {
-  WAITING = "waiting",
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
 }
@@ -21,10 +8,8 @@ export enum MatchStatus {
 interface IMatch {
   matchId: string;
   users: ObjectId[];
-  rounds: IRound[];
-  currentRound: number;
   status: MatchStatus;
-  overallWinner: ObjectId;
+  winner: ObjectId;
 }
 
 const matchSchema = new Schema<IMatch>(
@@ -41,42 +26,12 @@ const matchSchema = new Schema<IMatch>(
         required: true,
       },
     ],
-    rounds: [
-      {
-        roundNumber: {
-          type: Number,
-          required: true,
-        },
-        prompts: [
-          {
-            userId: {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: "User",
-              required: true,
-            },
-            prompt: {
-              type: String,
-              required: true,
-            },
-          },
-        ],
-        winner: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          default: null,
-        },
-      },
-    ],
-    currentRound: {
-      type: Number,
-      default: 0,
-    },
     status: {
       type: String,
       enum: Object.values(MatchStatus),
-      default: MatchStatus.WAITING,
+      default: MatchStatus.IN_PROGRESS,
     },
-    overallWinner: {
+    winner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
