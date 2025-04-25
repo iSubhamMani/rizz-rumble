@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import RedisService from "./Redis";
 import MatchService from "./Match";
 
-interface Player {
+export interface Player {
   player_id: string;
   socket_id: string;
 }
@@ -19,7 +19,7 @@ class MatchmakingService {
   public async handleMatchmaking(player_id: string, socket: Socket) {
     try {
       // check if redis has a waiting player
-      const waitingPlayer = await this.redis.getWaitingPlayer();
+      const waitingPlayer = await this.redis.WaitingPlayer;
 
       if (!waitingPlayer) {
         // if not, add the player to redis
@@ -32,7 +32,7 @@ class MatchmakingService {
           // add a timeout to remove the player from waiting lobby
 
           const matchmakingTimeout = setTimeout(async () => {
-            const stillWaiting = await this.redis.getWaitingPlayer();
+            const stillWaiting = await this.redis.WaitingPlayer;
 
             if (stillWaiting) {
               const waitingPlayerInfo = JSON.parse(stillWaiting);
@@ -58,7 +58,7 @@ class MatchmakingService {
         }
 
         // means another player is already waiting
-        const newWaitingPlayer = await this.redis.getWaitingPlayer();
+        const newWaitingPlayer = await this.redis.WaitingPlayer;
         if (!newWaitingPlayer) return;
 
         const waitingPlayerInfo = JSON.parse(newWaitingPlayer);
@@ -125,6 +125,9 @@ class MatchmakingService {
         matchId,
       });
     }
+
+    this.matchService.createMatchState(matchId, player1, player2);
+    this.matchService.startMatch(matchId);
   }
 
   public async cancelMatchmaking(message: any, socket: Socket) {
@@ -140,7 +143,7 @@ class MatchmakingService {
     }
 
     // Remove the player from waiting lobby
-    const waitingPlayer = await this.redis.getWaitingPlayer();
+    const waitingPlayer = await this.redis.WaitingPlayer;
     if (waitingPlayer) {
       const waitingPlayerInfo = JSON.parse(waitingPlayer);
       if (waitingPlayerInfo.player_id === player_id) {

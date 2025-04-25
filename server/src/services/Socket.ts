@@ -23,14 +23,14 @@ class SocketService {
     });
 
     this.redis = new RedisService();
-    this.matchService = new MatchService();
+    this.matchService = new MatchService(this.redis, this._io);
     this.matchmakingService = new MatchmakingService(
       this._io,
       this.redis,
       this.matchService
     );
 
-    this.redis.getSubscriber().subscribe("game:matchmaking");
+    this.redis.Subscriber.subscribe("game:matchmaking");
   }
 
   get io() {
@@ -66,7 +66,7 @@ class SocketService {
       socket.on("disconnect", async () => {
         console.log("Client disconnected", socket.id);
         // Clean up if the disconnecting socket is the one in lobby
-        const waitingPlayer = await this.redis.getWaitingPlayer();
+        const waitingPlayer = await this.redis.WaitingPlayer;
         if (
           waitingPlayer &&
           JSON.parse(waitingPlayer).socket_id === socket.id
@@ -80,7 +80,7 @@ class SocketService {
       });
     });
 
-    this.redis.getSubscriber().on("message", (channel, message) => {
+    this.redis.Subscriber.on("message", (channel, message) => {
       if (channel === "game:matchmaking") {
         // broadcast this message to both player
         this.matchmakingService.handleMatchFound(message);
