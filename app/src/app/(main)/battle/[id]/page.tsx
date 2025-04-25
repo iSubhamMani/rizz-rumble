@@ -78,6 +78,7 @@ const Battle = () => {
         const res = await axios.get(`/api/match/${matchId}`);
         setMatchInfo(res.data);
       } catch (error) {
+        setMatchInfo(null);
         console.log(error);
       } finally {
         setLoadingInfo(false);
@@ -111,6 +112,37 @@ const Battle = () => {
         <div className="w-full h-full flex justify-center items-center gap-4  animate-pulse">
           <Swords className="text-white size-7" />
           <p className="text-white text-lg font-bold">Loading Match...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loadingInfo && !matchInfo) {
+    return (
+      <div className="flex flex-col h-screen text-white relative overflow-hidden">
+        <div className="absolute top-1/4 -left-20 w-40 h-40 rounded-full bg-pink-500/20 blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-60 h-60 rounded-full bg-violet-500/20 blur-3xl" />
+
+        <div
+          className="absolute inset-0 -z-50"
+          style={{
+            background: `
+             radial-gradient(
+        circle at 120% 50%,
+        rgba(0, 0, 0, 0.9) 10%,         
+        rgba(0, 0, 0, 0.9) 10%,         /* subtle transition */
+        rgba(5, 0, 20, 0.95) 60%,        /* near-black with purple hint */
+        rgba(0, 0, 0, 1.0) 85%            /* pure black edge */
+      )
+            `,
+          }}
+        />
+
+        <div className="w-full h-full flex justify-center items-center gap-4">
+          <Swords className="text-white size-7" />
+          <p className="text-white text-lg font-bold">
+            Oops! Looks like that match rage quit life.
+          </p>
         </div>
       </div>
     );
