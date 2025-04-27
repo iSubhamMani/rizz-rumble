@@ -72,7 +72,6 @@ class MatchmakingService {
         this.redis.publishMatchFound(player_id, socket.id, waitingPlayerInfo);
         await this.redis.clearWaitingPlayer();
       } else {
-        console.log("Match found");
         // if yes, create a game and publish the event
         const waitingPlayerInfo = JSON.parse(waitingPlayer) as Player;
 

@@ -55,7 +55,6 @@ class MatchService {
     player1: Player,
     player2: Player
   ) {
-    console.log("Creating match state");
     const initialState: MatchState = {
       players: [player1, player2],
       matchId,
@@ -83,12 +82,9 @@ class MatchService {
 
     const parsedMatchState = JSON.parse(matchState) as MatchState;
     const { players } = parsedMatchState;
-    console.log("Round started: ", parsedMatchState.currentRound);
 
     setTimeout(() => {
       // round end emit to both players
-      console.log("Round ended: ", parsedMatchState.currentRound);
-      console.log("Player ids: ", players[0].socket_id, players[1].socket_id);
       const player1Socket = this._io.sockets.sockets.get(players[0].socket_id);
       const player2Socket = this._io.sockets.sockets.get(players[1].socket_id);
 

@@ -61,8 +61,6 @@ class SocketService {
       });
 
       socket.on("event:roundResponse", async (message) => {
-        console.log("Round response received");
-
         const parsed =
           typeof message === "string" ? JSON.parse(message) : message;
         const { matchId, player_id, response, roundNumber } = parsed;
@@ -121,11 +119,6 @@ class SocketService {
             response, // ARGV[2] - no need to stringify if it's already a string
             roundNumber.toString() // ARGV[3] - ensure roundNumber is a string
           );
-
-          console.log(
-            `Response saved successfully. Response count: ${responseCount}`
-          );
-
           // Check if both players have responded
           if (responseCount === 2) {
             console.log("Both players have responded. Sending to judge");
