@@ -61,74 +61,7 @@ class SocketService {
       });
 
       socket.on("event:roundResponse", async (message) => {
-        const parsed =
-          typeof message === "string" ? JSON.parse(message) : message;
-        const { matchId, player_id, response, roundNumber } = parsed;
-
-        try {
-          // Adjusted Lua script for your specific data structure
-          const updateScript = `
-            local matchId = KEYS[1]
-            local playerId = ARGV[1]
-            local playerResponse = ARGV[2]
-            local roundNum = ARGV[3]
-            
-            -- Get current state
-            local currentState = redis.call('GET', matchId)
-            if not currentState then
-              return {err = "Match not found"}
-            end
-            
-            -- Parse the match state
-            local matchState = cjson.decode(currentState)
-            
-            -- Ensure the round exists (using string key)
-            if not matchState.roundDetails[roundNum] then
-              return {err = "Round not found"}
-            end
-            
-            -- Initialize responses object if it doesn't exist
-            if not matchState.roundDetails[roundNum].responses then
-              matchState.roundDetails[roundNum].responses = {}
-            end
-            
-            -- Add/update the player's response
-            matchState.roundDetails[roundNum].responses[playerId] = {
-              player_id = playerId,
-              response = playerResponse
-            }
-            
-            -- Save the updated state back to Redis
-            redis.call('SET', matchId, cjson.encode(matchState))
-            
-            -- Count the number of responses to check if both players have responded
-            local responseCount = 0
-            for _ in pairs(matchState.roundDetails[roundNum].responses) do
-              responseCount = responseCount + 1
-            end
-            
-            return responseCount
-          `;
-
-          // Execute the Lua script with ioredis
-          const responseCount = await this.redis.Store.eval(
-            updateScript,
-            1, // Number of keys
-            matchId, // KEYS[1]
-            player_id, // ARGV[1]
-            response, // ARGV[2] - no need to stringify if it's already a string
-            roundNumber.toString() // ARGV[3] - ensure roundNumber is a string
-          );
-          // Check if both players have responded
-          if (responseCount === 2) {
-            console.log("Both players have responded. Sending to judge");
-            // Publish to judge event here
-            // For example:
-            // await this.redis.Store.publish('judge:evaluate', JSON.stringify({matchId, roundNumber}));
-          }
-        } catch (error) {
-          console.error("Error handling round response:", error);
-        }
+        this.matchService.handleRoundResponse(message);
       });
 
       socket.on("event:cancelMatchmaking", async (message) => {
