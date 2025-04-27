@@ -4,11 +4,13 @@ class RedisService {
   private pub: Redis;
   private sub: Redis;
   private store: Redis;
+  private queue: Redis;
 
   constructor() {
     this.pub = new Redis(process.env.REDIS_URL!);
     this.sub = new Redis(process.env.REDIS_URL!);
     this.store = new Redis(process.env.REDIS_URL!);
+    this.queue = new Redis(process.env.REDIS_URL!);
   }
 
   public get Subscriber() {
@@ -17,6 +19,10 @@ class RedisService {
 
   public get Publisher() {
     return this.pub;
+  }
+
+  public get Queue() {
+    return this.queue;
   }
 
   public get WaitingPlayer() {
