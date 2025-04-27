@@ -60,7 +60,7 @@ class MatchService {
       matchId,
       roundDetails: {
         1: {
-          challenge: "Generate a storyline for a movie",
+          challenge: "The Ultimate Heist",
           responses: {},
           winner: "",
         },
@@ -68,7 +68,12 @@ class MatchService {
       currentRound: 1,
       overallWinner: "",
     };
-    await this.redis.Store.set(matchId, JSON.stringify(initialState));
+    await this.redis.Store.set(
+      matchId,
+      JSON.stringify(initialState),
+      "EX",
+      60 * 15
+    );
     this.redis.Publisher.publish("game:startRound", matchId);
   }
 
@@ -169,10 +174,9 @@ class MatchService {
       );
       // Check if both players have responded
       if (responseCount === 2) {
-        console.log("Both players have responded. Sending to judge");
-        // Publish to judge event here
-        // For example:
-        // await this.redis.Store.publish('judge:evaluate', JSON.stringify({matchId, roundNumber}));
+        console.log("Both players have responded. Pushing to queue");
+        // push to queue for judge
+        await this.redis.Queue.lpush("game:judgeQueue", matchId);
       }
     } catch (error) {
       console.error("Error handling round response:", error);
