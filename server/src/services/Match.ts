@@ -6,27 +6,28 @@ import RedisService from "./Redis";
 import { Socket } from "socket.io";
 import AiService from "./Ai";
 
-interface IResponses {
-  playerId: string;
+interface IResponse {
+  player_id: string;
   response: string;
 }
 
 export interface IRoundDetails {
-  roundNumber: number;
-  responses: IResponses[];
+  challenge: string;
+  responses: Record<string, IResponse>;
   winner: string | null;
 }
 
 interface MatchState {
   players: Player[];
   matchId: string;
-  roundDetails: IRoundDetails[];
+  roundDetails: Record<number, IRoundDetails>;
   currentRound: number;
   overallWinner: string | null;
 }
 
 class MatchService {
   private AiService: AiService;
+
   constructor(private redis: RedisService, private _io: Socket["server"]) {
     this.AiService = new AiService();
   }
@@ -54,107 +55,64 @@ class MatchService {
     player1: Player,
     player2: Player
   ) {
+    console.log("Creating match state");
     const initialState: MatchState = {
       players: [player1, player2],
       matchId,
-      roundDetails: [],
+      roundDetails: {
+        1: {
+          challenge: "Generate a storyline for a movie",
+          responses: {},
+          winner: "",
+        },
+      },
       currentRound: 1,
-      overallWinner: null,
+      overallWinner: "",
     };
-
     await this.redis.Store.set(matchId, JSON.stringify(initialState));
+    this.redis.Publisher.publish("game:startRound", matchId);
   }
 
-  public async startMatch(matchId: string) {
-    console.log("Started match timer for matchId:", matchId);
-    const interval = setInterval(async () => {
-      const stateStr = await this.redis.Store.get(matchId);
-      if (!stateStr) {
-        clearInterval(interval);
-        return;
-      }
+  public async startRound(matchId: string) {
+    const matchState = await this.redis.Store.get(matchId);
 
-      const state: MatchState = JSON.parse(stateStr);
-      console.log("Match timer tick for round:", state.currentRound);
+    if (!matchState) {
+      console.log("Match state not found");
+      return;
+    }
 
-      // Update state: add round data, increment round
-      state.roundDetails.push({
-        roundNumber: state.currentRound,
-        responses: state.players.map((player) => ({
-          playerId: player.player_id,
-          response: "Sample response",
-        })),
-        winner: null, // Set winner logic here
-      });
-      state.currentRound += 1;
+    const parsedMatchState = JSON.parse(matchState) as MatchState;
+    const { players } = parsedMatchState;
+    console.log("Round started: ", parsedMatchState.currentRound);
 
-      // End match if you have a max round
-      if (state.currentRound > 3) {
-        clearInterval(interval);
-        // judge the response and set the overall winner
-        const lastRoundDetails = state.roundDetails[2];
-        await this.AiService.judgeResponse(lastRoundDetails);
+    setTimeout(() => {
+      // round end emit to both players
+      console.log("Round ended: ", parsedMatchState.currentRound);
+      console.log("Player ids: ", players[0].socket_id, players[1].socket_id);
+      const player1Socket = this._io.sockets.sockets.get(players[0].socket_id);
+      const player2Socket = this._io.sockets.sockets.get(players[1].socket_id);
 
-        // TODO: emit to clients
-        const player1Socket = this._io.sockets.sockets.get(
-          state.players[0].socket_id
-        );
-        const player2Socket = this._io.sockets.sockets.get(
-          state.players[1].socket_id
-        );
+      const player1_id = players[0].player_id;
+      const player2_id = players[1].player_id;
 
-        if (player1Socket) {
-          player1Socket.emit("event:matchEnd", {
-            matchId,
-          });
-        }
-
-        if (player2Socket) {
-          player2Socket.emit("event:matchEnd", {
-            matchId,
-          });
-        }
-
-        await MatchModel.updateOne(
-          { matchId },
-          {
-            status: MatchStatus.COMPLETED,
-            winner: state.overallWinner,
-          }
-        );
-
-        await this.redis.Store.del(matchId);
-        return;
-      }
-
-      await this.redis.Store.set(matchId, JSON.stringify(state));
-
-      // TODO: judge and generate the new challenge and emit to clients
-      const lastRoundDetails = state.roundDetails[state.currentRound - 1];
-      const judgeResponse = await this.AiService.judgeResponse(
-        lastRoundDetails
-      );
-      const response = await this.AiService.generateChallenge();
-
-      const player1Socket = this._io.sockets.sockets.get(
-        state.players[0].socket_id
-      );
-      const player2Socket = this._io.sockets.sockets.get(
-        state.players[1].socket_id
-      );
+      //console.log("Sockets:", player1Socket, player2Socket);
 
       if (player1Socket) {
-        player1Socket.emit("event:matchUpdate", {
+        player1Socket.emit("event:roundEnd", {
           matchId,
+          player_id: player1_id,
+          roundNumber: parsedMatchState.currentRound,
         });
       }
 
       if (player2Socket) {
-        player2Socket.emit("event:matchUpdate", {
+        player2Socket.emit("event:roundEnd", {
           matchId,
+          player_id: player2_id,
+          roundNumber: parsedMatchState.currentRound,
         });
       }
-    }, 60 * 1000); // every 60 seconds
+    }, 60 * 1000);
   }
 }
 
