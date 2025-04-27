@@ -36,6 +36,16 @@ export const useSocket = () => {
   return context;
 };
 
+const sampleResponses = [
+  "In the dead of night, my team and I infiltrate the most secure vault in the world. Disguised as maintenance workers, we bypass high-tech security systems with our cutting-edge tools. The mission is clear: steal the priceless diamond without leaving a trace.",
+  "As the clock strikes midnight, we stealthily enter the vault, our hearts racing. The diamond glimmers in the dim light, a symbol of our success. With precision and teamwork, we execute our plan flawlessly. The heist is a masterpiece of strategy and skill.",
+  "My crew and I don’t need fancy gadgets—we rely on pure skill. We hack into the vault’s surveillance system and disable the cameras. As we slip through the laser grid, every movement counts. But the twist? I’ve planted a tracker on Player 1, ready to double-cross them.",
+  "The heist is a game of wits. I’ve studied the vault’s layout for weeks, memorizing every detail. As we enter, I spot a hidden trapdoor. It leads to a secret chamber with the diamond. My crew is in awe, but I know this is just the beginning of our adventure.",
+  "In the world of heists, trust is everything. I’ve worked with my crew for years, and we know each other’s strengths and weaknesses. As we navigate the vault, I rely on their expertise to guide us. Together, we’re unstoppable, and the diamond is ours for the taking.",
+  "The heist is a test of loyalty. I’ve been betrayed before, and I won’t let it happen again. As we enter the vault, I keep a close eye on my crew. One wrong move, and the plan could fall apart. But I trust them to have my back, just as I have theirs.",
+  "As we approach the vault, I can’t help but feel a rush of adrenaline. The diamond is within reach, but so are the guards. I’ve studied their patterns and know when to strike. With a well-timed distraction, we slip past them undetected.",
+];
+
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const socket = useRef<Socket | undefined>(undefined);
   const [inMatchmaking, setInMatchmaking] = useState(false);
@@ -53,10 +63,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           roundNumber: number;
         };
         // collect the response and send it to the server
+        const randomRes =
+          sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
         const message = {
           matchId,
           player_id,
-          response: "response",
+          response: randomRes,
           roundNumber,
         };
 
