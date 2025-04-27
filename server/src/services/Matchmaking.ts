@@ -114,6 +114,8 @@ class MatchmakingService {
       return;
     }
 
+    await this.matchService.createMatchState(matchId, player1, player2);
+
     if (player1Socket) {
       player1Socket.emit("event:matchFound", {
         matchId,
@@ -125,9 +127,6 @@ class MatchmakingService {
         matchId,
       });
     }
-
-    this.matchService.createMatchState(matchId, player1, player2);
-    this.matchService.startMatch(matchId);
   }
 
   public async cancelMatchmaking(message: any, socket: Socket) {
