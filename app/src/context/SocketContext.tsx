@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { io, Socket } from "socket.io-client";
@@ -36,21 +37,43 @@ export const useSocket = () => {
 };
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
-  const [socket, setSocket] = useState<Socket>();
+  const socket = useRef<Socket | undefined>(undefined);
   const [inMatchmaking, setInMatchmaking] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
   const [matchmakingError, setMatchmakingError] = useState<string | null>(null);
   const [matchmakingTimeout, setMatchmakingTimeout] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
 
+  const onRoundEnd = useCallback(
+    (matchInfo: any) => {
+      if (socket.current) {
+        const { matchId, player_id, roundNumber } = matchInfo as {
+          matchId: string;
+          player_id: string;
+          roundNumber: number;
+        };
+        // collect the response and send it to the server
+        const message = {
+          matchId,
+          player_id,
+          response: "response",
+          roundNumber,
+        };
+
+        socket.current.emit("event:roundResponse", JSON.stringify(message));
+      }
+    },
+    [socket]
+  );
+
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
     (player_id: string) => {
-      if (socket) {
+      if (socket.current) {
         setMatchFound(false);
         setMatchmakingError(null);
         setMatchmakingTimeout(false);
         setMatchId(null);
-        socket.emit("event:matchmaking", { player_id });
+        socket.current.emit("event:matchmaking", JSON.stringify({ player_id }));
         setInMatchmaking(true);
       }
     },
@@ -59,8 +82,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const cancelMatchmaking: SocketContextType["cancelMatchmaking"] = useCallback(
     (player_id: string) => {
-      if (socket) {
-        socket.emit("event:cancelMatchmaking", { player_id });
+      if (socket.current) {
+        socket.current.emit(
+          "event:cancelMatchmaking",
+          JSON.stringify({ player_id })
+        );
         setInMatchmaking(false);
         setMatchFound(false);
         setMatchmakingError(null);
@@ -117,10 +143,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         _socket.disconnect();
         _socket.off("error:unauthorized", onUnauthorized);
         _socket.off("event:matchFound", onMatchFound);
+        _socket.off("event:roundEnd", onRoundEnd);
         _socket.off("error:matchmaking", onMatchmakingError);
         _socket.off("error:matchmakingTimeout", onMatchmakingTimeout);
         _socket.off("error:alreadyInLobby", onAlreadyInLobby);
-        setSocket(undefined);
+        socket.current = undefined;
       }
     },
     [socket]
@@ -134,8 +161,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     _socket.on("error:matchmaking", onMatchmakingError);
     _socket.on("error:matchmakingTimeout", onMatchmakingTimeout);
     _socket.on("error:alreadyInLobby", onAlreadyInLobby);
+    _socket.on("event:roundEnd", onRoundEnd);
 
-    setSocket(_socket);
+    socket.current = _socket;
 
     return () => {
       disconnectSocket(_socket);
