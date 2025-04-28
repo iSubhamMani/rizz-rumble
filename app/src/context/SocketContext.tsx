@@ -78,6 +78,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     [socket]
   );
 
+  const onRoundResult = useCallback((matchInfo: any) => {
+    console.log("ROUND RESULT");
+    console.log(matchInfo);
+  }, []);
+
+  const onMatchEnd = useCallback((matchInfo: any) => {
+    console.log("MATCH END");
+    console.log(matchInfo);
+  }, []);
+
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
     (player_id: string) => {
       if (socket.current) {
@@ -155,6 +165,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         _socket.disconnect();
         _socket.off("error:unauthorized", onUnauthorized);
         _socket.off("event:matchFound", onMatchFound);
+        _socket.off("event:roundResult", onRoundResult);
+        _socket.off("event:matchEnd", onMatchEnd);
         _socket.off("event:roundEnd", onRoundEnd);
         _socket.off("error:matchmaking", onMatchmakingError);
         _socket.off("error:matchmakingTimeout", onMatchmakingTimeout);
@@ -174,6 +186,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     _socket.on("error:matchmakingTimeout", onMatchmakingTimeout);
     _socket.on("error:alreadyInLobby", onAlreadyInLobby);
     _socket.on("event:roundEnd", onRoundEnd);
+    _socket.on("event:roundResult", onRoundResult);
+    _socket.on("event:matchEnd", onMatchEnd);
 
     socket.current = _socket;
 
