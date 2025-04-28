@@ -226,7 +226,7 @@ class MatchService {
       if (player1Socket) {
         player1Socket.emit("event:roundResult", {
           matchId,
-          roundNumber: newRound,
+          nextRound: newRound,
           winner,
           reason,
         });
@@ -235,7 +235,7 @@ class MatchService {
       if (player2Socket) {
         player2Socket.emit("event:roundResult", {
           matchId,
-          roundNumber: newRound,
+          nextRound: newRound,
           winner,
           reason,
         });
