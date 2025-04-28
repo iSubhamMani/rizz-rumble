@@ -32,6 +32,7 @@ class SocketService {
 
     this.redis.Subscriber.subscribe("game:matchmaking");
     this.redis.Subscriber.subscribe("game:startRound");
+    this.redis.Subscriber.subscribe("game:judgeComplete");
   }
 
   get io() {
@@ -86,11 +87,16 @@ class SocketService {
     });
 
     this.redis.Subscriber.on("message", (channel, message) => {
-      if (channel === "game:matchmaking") {
-        // broadcast this message to both player
-        this.matchmakingService.handleMatchFound(message);
-      } else if (channel === "game:startRound") {
-        this.matchService.startRound(message);
+      switch (channel) {
+        case "game:matchmaking":
+          this.matchmakingService.handleMatchFound(message);
+          break;
+        case "game:startRound":
+          this.matchService.startRound(message);
+          break;
+        case "game:judgeComplete":
+          this.matchService.handleJudgeComplete(message);
+          break;
       }
     });
   }
