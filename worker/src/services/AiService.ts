@@ -37,6 +37,9 @@ class AiService {
             - Only one player can win. No ties allowed.
             - Be strictly objective.
             - After analyzing, output the winning player's ID and a short reason for your decision (2-3 sentences).
+            - If both responses are exactly the same, declare player 1 as the winner. Give reason that both responses are the same.
+            - If both responses are out of context, set winner to empty string "" and give reason that both responses are out of context.
+            - Do not include any additional text or explanations outside of the JSON format.
 
             Here is the information:
 
@@ -63,7 +66,39 @@ class AiService {
       contents: prompt,
     });
 
-    return response.text;
+    if (response.text) {
+      return JSON.parse(response.text.replace(/```json\s*|\s*```/g, ""));
+    }
+
+    return null;
+  }
+
+  public async generateChallenge() {
+    const prompt = `
+      You are a problem setter in a 1v1 prompt battle game.
+     Your task is to generate a short, creative topic (max 5-7 words) that can challenge two users to write the best possible prompt. 
+     The topic should cover a wide range of ideas (e.g., fantasy, science, technology, emotions, survival) and be open-ended enough to allow for imaginative prompt-writing.
+
+     Structure the response strictly in this exact JSON format:
+    {
+      "newChallenge": "the generated topic" 
+    }
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
+
+    if (response.text) {
+      const result = response.text.replace(/```json\s*|\s*```/g, "");
+      console.log("Generated challenge: ", result);
+      const parsed = JSON.parse(result);
+      console.log("Parsed challenge: ", parsed);
+      return parsed;
+    }
+
+    return null;
   }
 }
 
