@@ -182,6 +182,68 @@ class MatchService {
       console.error("Error handling round response:", error);
     }
   }
+
+  public async handleJudgeComplete(message: any) {
+    const parsed = typeof message === "string" ? JSON.parse(message) : message;
+    const { matchId, newRound, winner, reason } = parsed;
+    console.log("Judge complete: ", parsed);
+
+    // TODO: handle errors
+
+    if (!matchId) return;
+    const matchState = await this.redis.Store.get(matchId);
+
+    if (!matchState) {
+      console.log("Match state not found");
+      return;
+    }
+
+    let { players } = JSON.parse(matchState);
+
+    const player1Socket = this._io.sockets.sockets.get(players[0].socket_id);
+    const player2Socket = this._io.sockets.sockets.get(players[1].socket_id);
+
+    if (newRound > 3) {
+      // TODO: handle end of match
+      console.log("Match ended");
+      if (player1Socket) {
+        player1Socket.emit("event:matchEnd", {
+          matchId,
+          winner,
+          reason,
+        });
+      }
+      if (player2Socket) {
+        player2Socket.emit("event:matchEnd", {
+          matchId,
+          winner,
+          reason,
+        });
+      }
+    } else {
+      // emit to both players
+      console.log("Round result");
+      if (player1Socket) {
+        player1Socket.emit("event:roundResult", {
+          matchId,
+          roundNumber: newRound,
+          winner,
+          reason,
+        });
+      }
+
+      if (player2Socket) {
+        player2Socket.emit("event:roundResult", {
+          matchId,
+          roundNumber: newRound,
+          winner,
+          reason,
+        });
+      }
+
+      await this.redis.Publisher.publish("game:startRound", matchId);
+    }
+  }
 }
 
 export default MatchService;
