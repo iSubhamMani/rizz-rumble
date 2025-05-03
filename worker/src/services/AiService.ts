@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import RedisService from "./Redis";
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
@@ -16,6 +17,8 @@ export interface IRoundDetails {
 }
 
 class AiService {
+  constructor(private redis: RedisService) {}
+
   public async judgeRound(roundDetails: IRoundDetails) {
     const { challenge, responses } = roundDetails;
     const player1Response = Object.values(responses)[0].response;
@@ -34,11 +37,9 @@ class AiService {
             - Overall quality of writing
 
             Rules:
-            - Only one player can win. No ties allowed.
             - Be strictly objective.
             - After analyzing, output the winning player's ID and a short reason for your decision (2-3 sentences).
-            - If both responses are exactly the same, declare player 1 as the winner. Give reason that both responses are the same.
-            - If both responses are out of context, set winner to empty string "" and give reason that both responses are out of context.
+            - If both responses are exactly the same or out of context, set winner to "none". Give reason for the same.
             - Do not include any additional text or explanations outside of the JSON format.
 
             Here is the information:
@@ -54,10 +55,18 @@ class AiService {
             Player 2 Response:
             ${player2Response}
 
-            Now determine the winner. Respond in this exact JSON format:
+            Now determine the winner. Use the player ids given above for the winner field.
+            For the reason field don't include any statement like "Player 2's response is more relevant" or even their ids. Just provide a brief reason for your decision.
+            Respond in this exact JSON format:
             {
             "winner": "player_id here",
-            "reason": "your brief reason here"
+            "reason": "brief reason here without referring to player numbers or IDs"
+            }
+
+            Example:
+            {
+              "winner": "123645",
+              "reason": Response was more creative and relevant to the challenge topic."
             }
         `;
 
@@ -73,11 +82,34 @@ class AiService {
     return null;
   }
 
-  public async generateChallenge() {
+  public async generateChallenge(matchId: string) {
+    // fetch previous challenges
+    const match = await this.redis.Store.get(matchId);
+
+    if (!match) {
+      console.log("Match not found in store");
+      return null;
+    }
+
+    const parsedMatch = JSON.parse(match);
+    const { roundDetails } = parsedMatch;
+    const previousChallenges: string[] = [];
+
+    for (const round of Object.keys(roundDetails)) {
+      const roundDetail = roundDetails[round];
+      if (roundDetail.challenge) {
+        previousChallenges.push(roundDetail.challenge);
+      }
+    }
+
     const prompt = `
       You are a problem setter in a 1v1 prompt battle game.
      Your task is to generate a short, creative topic (max 5-7 words) that can challenge two users to write the best possible prompt. 
-     The topic should cover a wide range of ideas (e.g., fantasy, science, technology, emotions, survival) and be open-ended enough to allow for imaginative prompt-writing.
+     The topic should cover a wide range of ideas (e.g., fantasy, science, technology, emotions, survival) and be open-ended enough to allow for imaginative prompt-writing but nothing too complicated.
+     Try to use simple language and avoid using any technical jargon.
+
+     The topic should not be similar to the following topics, if there are any:
+      ${previousChallenges.join(", ")}
 
      Structure the response strictly in this exact JSON format:
     {
