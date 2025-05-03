@@ -2,7 +2,8 @@ import { connectDB } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/config";
-import { MatchModel } from "@/models/Match";
+import { redis } from "@/lib/redisClient";
+import { UserModel } from "@/models/User";
 
 export async function GET(req: NextRequest) {
   await connectDB();
@@ -21,47 +22,40 @@ export async function GET(req: NextRequest) {
       throw new Error("Unauthorized");
     }
 
-    const matchInfo = await MatchModel.aggregate([
-      {
-        $match: {
-          matchId: matchId,
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "users",
-          foreignField: "_id",
-          as: "users",
-          pipeline: [
-            {
-              $project: {
-                _id: 1,
-                username: 1,
-                rank: 1,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $project: {
-          matchId: 1,
-          users: 1,
-          rounds: 1,
-          currentRound: 1,
-          status: 1,
-          overallWinner: 1,
-        },
-      },
-    ]);
+    const matchDetails = await redis.Store.get(matchId);
 
-    if (!matchInfo || matchInfo.length === 0) {
+    if (!matchDetails) {
       throw new Error("Match not found");
     }
-    const match = matchInfo[0];
 
-    return NextResponse.json(match);
+    const parsedMatchDetails = JSON.parse(matchDetails);
+    const { players } = parsedMatchDetails;
+    const player1 = players[0];
+    const player2 = players[1];
+    const player1Details = await UserModel.findById(player1.player_id);
+    const player2Details = await UserModel.findById(player2.player_id);
+
+    if (!player1Details || !player2Details) {
+      throw new Error("Player not found");
+    }
+
+    const playerDetails = {
+      matchId: matchId,
+      players: [
+        {
+          _id: player1Details._id,
+          username: player1Details?.username,
+          rank: player1Details?.rank,
+        },
+        {
+          _id: player2Details._id,
+          username: player2Details?.username,
+          rank: player2Details?.rank,
+        },
+      ],
+    };
+
+    return NextResponse.json(playerDetails);
   } catch (error) {
     return NextResponse.json(
       {
