@@ -18,16 +18,13 @@ Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to p
    ```bash
    cd prompt-brawl
    ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the application:
+3. Install dependencies and start the application:
 
    For next app:
 
    ```bash
    cd app
+   npm i
    npm run dev
    ```
 
@@ -35,13 +32,22 @@ Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to p
 
    ```bash
    cd server
+   npm i
+   npm run dev
+   ```
+
+   For worker:
+
+   ```bash
+   cd server
+   npm i
    npm run dev
    ```
 
 ## Technologies Used
 
 - **Frontend**: NextJs, Shadcn
-- **Backend**: Node.js, NextJs
+- **Backend**: Node.js, NextJs, Redis
 - **Database**: MongoDB
 - **Real-time Communication**: Socket.IO
 
