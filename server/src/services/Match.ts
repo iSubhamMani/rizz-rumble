@@ -1,10 +1,6 @@
-import { v4 as uuid } from "uuid";
-import { MatchModel, MatchStatus } from "../models/Match";
-import { connectDB } from "./Db";
 import { Player } from "./Matchmaking";
 import RedisService from "./Redis";
 import { Socket } from "socket.io";
-import AiService from "./Ai";
 
 interface IResponse {
   player_id: string;
@@ -26,41 +22,58 @@ interface MatchState {
 }
 
 class MatchService {
-  private AiService: AiService;
+  constructor(private redis: RedisService, private _io: Socket["server"]) {}
 
-  constructor(private redis: RedisService, private _io: Socket["server"]) {
-    this.AiService = new AiService();
-  }
+  public async initGame(matchId: string) {
+    const matchState = await this.redis.Store.get(matchId);
 
-  public async createMatch(player1_id: string, player2_id: string) {
-    await connectDB();
-    try {
-      const matchId = uuid();
-
-      await MatchModel.create({
-        matchId,
-        users: [player1_id, player2_id],
-        status: MatchStatus.IN_PROGRESS,
-        winner: null,
-      });
-
-      return matchId;
-    } catch {
-      return null;
+    if (!matchState) {
+      console.log("Match state not found");
+      return;
     }
+
+    const parsedMatchState = JSON.parse(matchState) as MatchState;
+    const { players, roundDetails } = parsedMatchState;
+    const challenge = roundDetails[1].challenge;
+
+    const player1Socket = this._io.sockets.sockets.get(players[0].socket_id);
+    const player2Socket = this._io.sockets.sockets.get(players[1].socket_id);
+
+    if (player1Socket) {
+      player1Socket.emit("event:matchKickoff", { challenge });
+    }
+
+    if (player2Socket) {
+      player2Socket.emit("event:matchKickoff", { challenge });
+    }
+    await this.redis.Publisher.publish("game:startRound", matchId);
   }
 
-  public async createMatchState(
-    matchId: string,
-    player1: Player,
-    player2: Player
-  ) {
+  public async createMatchState(player1: Player, player2: Player) {
+    const matchId = [player1.player_id, player2.player_id].sort().join("-");
+
+    // Try to acquire the key only if it doesn't exist
+    const acquired = await this.redis.Store.set(
+      matchId,
+      "LOCKED", // Temporary placeholder
+      "EX",
+      60 * 15,
+      "NX"
+    );
+
+    if (acquired === null) {
+      // Key already exists, another server already created the match
+      console.log("Key already exists");
+      return matchId;
+    }
+    console.log("Key acquired, creating match state");
+
     const initialState: MatchState = {
       players: [player1, player2],
       matchId,
       roundDetails: {
         1: {
-          challenge: "The Ultimate Heist",
+          challenge: "",
           responses: {},
           winner: "",
         },
@@ -68,13 +81,16 @@ class MatchService {
       currentRound: 1,
       overallWinner: "",
     };
+
     await this.redis.Store.set(
       matchId,
       JSON.stringify(initialState),
       "EX",
-      60 * 15
+      60 * 60 * 24
     );
-    this.redis.Publisher.publish("game:startRound", matchId);
+
+    await this.redis.Publisher.publish("game:initialChallenge", matchId);
+    return matchId;
   }
 
   public async startRound(matchId: string) {
@@ -87,6 +103,7 @@ class MatchService {
 
     const parsedMatchState = JSON.parse(matchState) as MatchState;
     const { players } = parsedMatchState;
+    console.log("Starting New Round");
 
     setTimeout(() => {
       // round end emit to both players
@@ -186,6 +203,10 @@ class MatchService {
   public async handleJudgeComplete(message: any) {
     const parsed = typeof message === "string" ? JSON.parse(message) : message;
     const { matchId, newRound, winner, reason } = parsed;
+    console.log(
+      "New challenged: ",
+      parsed.newChallenge ? parsed.newChallenge : "No new challenge"
+    );
     console.log("Judge complete: ", parsed);
 
     // TODO: handle errors
@@ -204,22 +225,48 @@ class MatchService {
     const player2Socket = this._io.sockets.sockets.get(players[1].socket_id);
 
     if (newRound > 3) {
-      // TODO: handle end of match
       console.log("Match ended");
+
+      // calculate overallWinner
+      const matchState = await this.redis.Store.get(matchId);
+      if (!matchState) {
+        console.log("Match state not found");
+        return;
+      }
+      const parsedMatchState = JSON.parse(matchState) as MatchState;
+      const { roundDetails } = parsedMatchState;
+
+      const player1Wins = Object.values(roundDetails).filter(
+        (round) => round.winner === players[0].player_id
+      ).length;
+
+      const player2Wins = Object.values(roundDetails).filter(
+        (round) => round.winner === players[1].player_id
+      ).length;
+
+      const overallWinner =
+        player1Wins > player2Wins
+          ? players[0].player_id
+          : player1Wins === player2Wins
+          ? "none"
+          : players[1].player_id;
+
       if (player1Socket) {
         player1Socket.emit("event:matchEnd", {
           matchId,
-          winner,
+          winner: overallWinner,
           reason,
         });
       }
       if (player2Socket) {
         player2Socket.emit("event:matchEnd", {
           matchId,
-          winner,
+          winner: overallWinner,
           reason,
         });
       }
+
+      await this.redis.Store.del(matchId);
     } else {
       // emit to both players
       console.log("Round result");
@@ -229,6 +276,7 @@ class MatchService {
           nextRound: newRound,
           winner,
           reason,
+          newChallenge: parsed.newChallenge,
         });
       }
 
@@ -238,6 +286,7 @@ class MatchService {
           nextRound: newRound,
           winner,
           reason,
+          newChallenge: parsed.newChallenge,
         });
       }
 
