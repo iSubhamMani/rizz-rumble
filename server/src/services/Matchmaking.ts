@@ -101,10 +101,7 @@ class MatchmakingService {
     const player1Socket = this._io.sockets.sockets.get(player1.socket_id);
     const player2Socket = this._io.sockets.sockets.get(player2.socket_id);
 
-    const matchId = await this.matchService.createMatch(
-      player1.player_id,
-      player2.player_id
-    );
+    const matchId = await this.matchService.createMatchState(player1, player2);
 
     if (!matchId) {
       console.error("Error creating match");
@@ -112,8 +109,6 @@ class MatchmakingService {
       if (player2Socket) player2Socket.emit("error:matchmaking");
       return;
     }
-
-    await this.matchService.createMatchState(matchId, player1, player2);
 
     if (player1Socket) {
       player1Socket.emit("event:matchFound", {
