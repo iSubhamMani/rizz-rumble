@@ -33,6 +33,7 @@ class SocketService {
     this.redis.Subscriber.subscribe("game:matchmaking");
     this.redis.Subscriber.subscribe("game:startRound");
     this.redis.Subscriber.subscribe("game:judgeComplete");
+    this.redis.Subscriber.subscribe("game:initialChallengeGenerated");
   }
 
   get io() {
@@ -97,6 +98,8 @@ class SocketService {
         case "game:judgeComplete":
           this.matchService.handleJudgeComplete(message);
           break;
+        case "game:initialChallengeGenerated":
+          this.matchService.initGame(message);
       }
     });
   }
