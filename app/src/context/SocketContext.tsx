@@ -19,11 +19,20 @@ interface SocketProviderProps {
 interface SocketContextType {
   inMatchmaking: boolean;
   matchFound: boolean;
+  isMatchEnd: boolean;
   matchmakingError: string | null;
   matchmakingTimeout: boolean;
   matchId: string | null;
+  challenge: string | null;
+  initialChallenge: string | null;
+  winner: string | null;
+  reason: string | null;
+  prompt: string | null;
+  roundNumber: number;
   startMatchmaking: (player_id: string) => any;
   cancelMatchmaking: (player_id: string) => any;
+  setPrompt: (prompt: string | null) => void;
+  setInitialChallenge: (challenge: string | null) => void;
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
@@ -36,16 +45,6 @@ export const useSocket = () => {
   return context;
 };
 
-const sampleResponses = [
-  "In the dead of night, my team and I infiltrate the most secure vault in the world. Disguised as maintenance workers, we bypass high-tech security systems with our cutting-edge tools. The mission is clear: steal the priceless diamond without leaving a trace.",
-  "As the clock strikes midnight, we stealthily enter the vault, our hearts racing. The diamond glimmers in the dim light, a symbol of our success. With precision and teamwork, we execute our plan flawlessly. The heist is a masterpiece of strategy and skill.",
-  "My crew and I don’t need fancy gadgets—we rely on pure skill. We hack into the vault’s surveillance system and disable the cameras. As we slip through the laser grid, every movement counts. But the twist? I’ve planted a tracker on Player 1, ready to double-cross them.",
-  "The heist is a game of wits. I’ve studied the vault’s layout for weeks, memorizing every detail. As we enter, I spot a hidden trapdoor. It leads to a secret chamber with the diamond. My crew is in awe, but I know this is just the beginning of our adventure.",
-  "In the world of heists, trust is everything. I’ve worked with my crew for years, and we know each other’s strengths and weaknesses. As we navigate the vault, I rely on their expertise to guide us. Together, we’re unstoppable, and the diamond is ours for the taking.",
-  "The heist is a test of loyalty. I’ve been betrayed before, and I won’t let it happen again. As we enter the vault, I keep a close eye on my crew. One wrong move, and the plan could fall apart. But I trust them to have my back, just as I have theirs.",
-  "As we approach the vault, I can’t help but feel a rush of adrenaline. The diamond is within reach, but so are the guards. I’ve studied their patterns and know when to strike. With a well-timed distraction, we slip past them undetected.",
-];
-
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const socket = useRef<Socket | undefined>(undefined);
   const [inMatchmaking, setInMatchmaking] = useState(false);
@@ -53,22 +52,33 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [matchmakingError, setMatchmakingError] = useState<string | null>(null);
   const [matchmakingTimeout, setMatchmakingTimeout] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [roundNumber, setRoundNumber] = useState<number>(1);
+  const [winner, setWinner] = useState<string | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState<string | null>(null);
+  const [isMatchEnd, setIsMatchEnd] = useState(true);
+  const promptRef = useRef<string | null>(null);
+  const [initialChallenge, setInitialChallenge] = useState<string | null>(null);
+
+  useEffect(() => {
+    promptRef.current = prompt;
+  }, [prompt]);
 
   const onRoundEnd = useCallback(
     (matchInfo: any) => {
       if (socket.current) {
+        console.log("Prompt:", promptRef.current);
         const { matchId, player_id, roundNumber } = matchInfo as {
           matchId: string;
           player_id: string;
           roundNumber: number;
         };
         // collect the response and send it to the server
-        const randomRes =
-          sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
         const message = {
           matchId,
           player_id,
-          response: randomRes,
+          response: promptRef.current,
           roundNumber,
         };
 
@@ -80,12 +90,23 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const onRoundResult = useCallback((matchInfo: any) => {
     console.log("ROUND RESULT");
+    const { nextRound, winner, reason, newChallenge } = matchInfo;
     console.log(matchInfo);
+
+    setRoundNumber(nextRound);
+    setWinner(winner);
+    setReason(reason);
+    setChallenge(newChallenge);
   }, []);
 
   const onMatchEnd = useCallback((matchInfo: any) => {
     console.log("MATCH END");
-    console.log(matchInfo);
+    const { winner } = matchInfo;
+    setWinner(winner);
+    setReason(null);
+    setIsMatchEnd(true);
+    setMatchFound(false);
+    setChallenge(null);
   }, []);
 
   const startMatchmaking: SocketContextType["startMatchmaking"] = useCallback(
@@ -94,9 +115,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setMatchFound(false);
         setMatchmakingError(null);
         setMatchmakingTimeout(false);
+        setIsMatchEnd(false);
+        setChallenge(null);
+        setWinner(null);
+        setReason(null);
+        setRoundNumber(1);
+        setInitialChallenge(null);
+        setPrompt(null);
         setMatchId(null);
-        socket.current.emit("event:matchmaking", JSON.stringify({ player_id }));
         setInMatchmaking(true);
+        socket.current.emit("event:matchmaking", JSON.stringify({ player_id }));
       }
     },
     [socket]
@@ -127,6 +155,16 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     if (matchId) {
       setMatchId(matchId);
       setMatchFound(true);
+    }
+  }, []);
+
+  const onMatchKickoff = useCallback((matchInfo: any) => {
+    const { challenge } = matchInfo;
+    console.log("MATCH KICKOFF:", challenge);
+
+    if (challenge) {
+      //setChallenge(challenge)
+      setInitialChallenge(challenge);
     }
   }, []);
 
@@ -167,6 +205,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         _socket.off("event:matchFound", onMatchFound);
         _socket.off("event:roundResult", onRoundResult);
         _socket.off("event:matchEnd", onMatchEnd);
+        _socket.off("event:matchKickoff", onMatchKickoff);
         _socket.off("event:roundEnd", onRoundEnd);
         _socket.off("error:matchmaking", onMatchmakingError);
         _socket.off("error:matchmakingTimeout", onMatchmakingTimeout);
@@ -185,6 +224,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     _socket.on("error:matchmaking", onMatchmakingError);
     _socket.on("error:matchmakingTimeout", onMatchmakingTimeout);
     _socket.on("error:alreadyInLobby", onAlreadyInLobby);
+    _socket.on("event:matchKickoff", onMatchKickoff);
     _socket.on("event:roundEnd", onRoundEnd);
     _socket.on("event:roundResult", onRoundResult);
     _socket.on("event:matchEnd", onMatchEnd);
@@ -201,11 +241,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       value={{
         startMatchmaking,
         cancelMatchmaking,
+        setPrompt,
+        setInitialChallenge,
         inMatchmaking,
+        isMatchEnd,
         matchFound,
         matchmakingError,
         matchId,
         matchmakingTimeout,
+        challenge,
+        initialChallenge,
+        winner,
+        reason,
+        roundNumber,
+        prompt,
       }}
     >
       {children}
