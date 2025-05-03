@@ -8,12 +8,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send, Swords } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useSocket } from "@/context/SocketContext";
+import BattleLog from "@/components/BattleLog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface IMatchInfo {
   matchId: string;
-  users: {
+  players: {
     _id: string;
     username: string;
     rank: number;
@@ -31,7 +42,7 @@ interface IMatchInfo {
   overallWinner: string | null;
 }
 
-interface IPlayer {
+export interface IPlayer {
   _id: string;
   username: string;
   rank: number;
@@ -44,21 +55,24 @@ const Battle = () => {
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer | null>(null);
   const [opponentPlayer, setOpponentPlayer] = useState<IPlayer | null>(null);
   const { data: session } = useSession();
+  const router = useRouter();
+  const { initialChallenge, setPrompt, prompt, isMatchEnd, winner } =
+    useSocket();
 
   const getCurrentPlayer = useCallback(() => {
     if (!session || !session.user) return null;
-    const user = matchInfo?.users.find(
-      (user) => user._id === session.user?._id
+    const player = matchInfo?.players.find(
+      (player) => player._id === session.user?._id
     );
-    return user ? user : null;
+    return player ? player : null;
   }, [session, matchInfo]);
 
   const getOpponentPlayer = useCallback(() => {
     if (!session || !session.user) return null;
-    const user = matchInfo?.users.find(
-      (user) => user._id !== session.user?._id
+    const player = matchInfo?.players.find(
+      (player) => player._id !== session.user?._id
     );
-    return user ? user : null;
+    return player ? player : null;
   }, [session, matchInfo]);
 
   useEffect(() => {
@@ -171,17 +185,58 @@ const Battle = () => {
           }}
         />
 
+        {isMatchEnd && (
+          <AlertDialog open={isMatchEnd}>
+            <AlertDialogContent
+              className="border border-violet-300 bg-black/40 text-white 
+              p-6 rounded-lg backdrop-blur-lg shadow-[0_0_10px_#8b5cf6,0_0_4px_#8b5cf6]"
+            >
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-bold text-xl text-center text-violet-300">
+                  {winner === currentPlayer._id
+                    ? "You've won the match!"
+                    : winner === "none"
+                      ? "It's a draw!"
+                      : "Better Luck Next Time!"}
+                </AlertDialogTitle>
+                <AlertDialogDescription className="font-medium text-sm text-white">
+                  {winner === currentPlayer._id
+                    ? "Congratulations! You have emerged victorious in this battle of wits. Your skills and creativity have shone through, and you have proven yourself to be a formidable opponent."
+                    : winner === "none"
+                      ? `
+                      The match has ended in a draw! Both players have shown exceptional skill and creativity, making it a truly memorable battle.
+                    `
+                      : "The match has come to an end, and while you may not have emerged as the victor this time, your efforts and creativity were commendable. Every battle is a learning experience, and we hope to see you back in action soon!"}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogAction
+                  onClick={() => router.replace("/play")}
+                  className="uppercase border border-white font-bold text-sm px-4 py-5
+             text-white hover:bg-white hover:text-violet-500 
+             bg-transparent relative z-10 
+             shadow-[0_0_4px_#8b5cf6,0_0_10px_#8b5cf6] 
+             hover:shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6] 
+             transition-all duration-200 ease-in-out"
+                >
+                  Return Home
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
         {/* Content */}
         <main className="flex gap-6 px-8 py-6 h-screen">
           <div className="flex-[2] h-full flex flex-col">
             <div className="flex items-center gap-8">
-              <div className="flex gap-4">
+              <div className="flex items-center gap-4 px-3 py-2 rounded-lg border-b border-red-500 bg-gradient-to-r from-red-900/30 via-red-800/10 to-transparent">
                 <Avatar className="text-black cursor-pointer">
                   <AvatarImage src={"/default_avatar.jpg"} />
                   <AvatarFallback>TN</AvatarFallback>
                 </Avatar>
                 <div className="text-start">
-                  <p className="text-base font-bold tracking-widest">
+                  <p className="text-base font-bold tracking-widest max-w-[160px] line-clamp-1">
                     <span className="inline size-4"></span>
                     {opponentPlayer.username}
                   </p>
@@ -191,7 +246,7 @@ const Battle = () => {
                 </div>
               </div>
               <Swords className="text-white size-7" />
-              <div className="flex gap-4">
+              <div className="flex gap-4 items-center px-3 py-2 rounded-lg border-b border-violet-500 bg-gradient-to-l from-violet-900/30 via-violet-800/10 to-transparent">
                 <div className="text-end">
                   <p className="text-base font-bold tracking-widest">
                     <span className="inline size-4"></span>
@@ -223,24 +278,28 @@ const Battle = () => {
                 <ChatMessage />
                 {/* Add more messages to test scroll */}
               </div>
-              <div className="flex items-start overflow-hidden gap-4">
-                <Textarea
-                  className="border border-violet-300 bg-black/40 text-white rounded-lg shadow-md h-24 resize-none
+              {initialChallenge && (
+                <div className="flex fade-pullup items-start overflow-hidden gap-4">
+                  <Textarea
+                    value={prompt ?? ""}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                    }}
+                    className="border border-violet-300 bg-black/40 text-white rounded-lg shadow-md h-24 resize-none
               focus-visible:ring-0 focus-visible:outline-none scrollbar-hide"
-                  placeholder="Type your prompt here..."
-                />
-                <ButtonPrimary className="max-w-12">
-                  <Send />
-                </ButtonPrimary>
-              </div>
+                    placeholder="Type your prompt here..."
+                  />
+                  <ButtonPrimary className="max-w-12">
+                    <Send />
+                  </ButtonPrimary>
+                </div>
+              )}
             </div>
           </div>
-          <div
-            className="flex-1 border border-violet-300 bg-black/40 text-white 
-            p-6 rounded-lg backdrop-blur-lg shadow-md"
-          >
-            <h1 className="text-xl font-bold">Battle Log</h1>
-          </div>
+          <BattleLog
+            currentPlayer={currentPlayer}
+            opponentPlayer={opponentPlayer}
+          />
         </main>
       </div>
     )
