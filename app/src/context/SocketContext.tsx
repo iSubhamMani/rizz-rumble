@@ -29,6 +29,8 @@ interface SocketContextType {
   reason: string | null;
   prompt: string | null;
   roundNumber: number;
+  resetTimer: boolean;
+  judging: boolean;
   startMatchmaking: (player_id: string) => any;
   cancelMatchmaking: (player_id: string) => any;
   setPrompt: (prompt: string | null) => void;
@@ -57,8 +59,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [winner, setWinner] = useState<string | null>(null);
   const [reason, setReason] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
-  const [isMatchEnd, setIsMatchEnd] = useState(true);
+  const [isMatchEnd, setIsMatchEnd] = useState(false);
   const promptRef = useRef<string | null>(null);
+  const [resetTimer, setResetTimer] = useState(false);
+  const [judging, setJudging] = useState(false);
   const [initialChallenge, setInitialChallenge] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,6 +71,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const onRoundEnd = useCallback(
     (matchInfo: any) => {
+      setResetTimer(false);
+      setJudging(true);
       if (socket.current) {
         console.log("Prompt:", promptRef.current);
         const { matchId, player_id, roundNumber } = matchInfo as {
@@ -91,12 +97,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const onRoundResult = useCallback((matchInfo: any) => {
     console.log("ROUND RESULT");
     const { nextRound, winner, reason, newChallenge } = matchInfo;
-    console.log(matchInfo);
 
-    setRoundNumber(nextRound);
+    if (roundNumber < 3) setRoundNumber(nextRound);
     setWinner(winner);
     setReason(reason);
     setChallenge(newChallenge);
+    setResetTimer(true);
+    setJudging(false);
   }, []);
 
   const onMatchEnd = useCallback((matchInfo: any) => {
@@ -163,7 +170,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     console.log("MATCH KICKOFF:", challenge);
 
     if (challenge) {
-      //setChallenge(challenge)
+      setResetTimer(true);
       setInitialChallenge(challenge);
     }
   }, []);
@@ -255,6 +262,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         reason,
         roundNumber,
         prompt,
+        resetTimer,
+        judging,
       }}
     >
       {children}
