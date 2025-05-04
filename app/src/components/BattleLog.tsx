@@ -2,7 +2,7 @@
 
 import { IPlayer } from "@/app/(main)/battle/[id]/page";
 import { useSocket } from "@/context/SocketContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Round {
   id: number;
@@ -18,9 +18,10 @@ interface BattleLogProps {
 }
 
 const BattleLog = (props: BattleLogProps) => {
-  const { challenge, winner, reason, initialChallenge } = useSocket();
+  const { challenge, winner, reason, initialChallenge, judging } = useSocket();
   const [rounds, setRounds] = useState<Round[]>([]);
   const { currentPlayer, opponentPlayer } = props;
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (challenge && winner && reason) {
@@ -38,6 +39,7 @@ const BattleLog = (props: BattleLogProps) => {
         isNew: true,
       };
       setRounds((prev) => [...prev, newRound]);
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [challenge, winner, reason, currentPlayer, opponentPlayer]);
 
@@ -50,7 +52,7 @@ const BattleLog = (props: BattleLogProps) => {
           idx === prev.length - 1 ? { ...round, isNew: false } : round
         )
       );
-    }, 800); // should match animation duration
+    }, 800);
     return () => clearTimeout(timeout);
   }, [rounds]);
 
@@ -64,7 +66,7 @@ const BattleLog = (props: BattleLogProps) => {
         {initialChallenge && (
           <div className="fade-pullup">
             <div className="rounded-md border border-purple-600/40 bg-purple-900/10 p-4 mb-2 shadow-sm backdrop-blur-sm">
-              <p className="text-violet-100 font-bold text-sm uppercase tracking-widest glowing-text">
+              <p className="text-violet-100 font-bold text-sm uppercase tracking-widest">
                 Challenge:{" "}
                 <span
                   style={{
@@ -95,8 +97,11 @@ const BattleLog = (props: BattleLogProps) => {
               </p>
             </div>
             {/* Challenge Card */}
-            <div className="mt-6 rounded-md border border-purple-600/40 bg-purple-900/10 p-4 mb-2 shadow-sm backdrop-blur-sm">
-              <p className="font-bold text-violet-100 text-sm uppercase tracking-widest glowing-text">
+            <div
+              ref={bottomRef}
+              className="mt-6 rounded-md border border-purple-600/40 bg-purple-900/10 p-4 mb-2 shadow-sm backdrop-blur-sm"
+            >
+              <p className="font-bold text-violet-100 text-sm uppercase tracking-widest">
                 Challenge:{" "}
                 <span
                   style={{
@@ -110,6 +115,11 @@ const BattleLog = (props: BattleLogProps) => {
             </div>
           </div>
         ))}
+        {judging && (
+          <p className="text-purple-300 font-medium animate-pulse text-center">
+            Judging round...
+          </p>
+        )}
       </div>
     </div>
   );
