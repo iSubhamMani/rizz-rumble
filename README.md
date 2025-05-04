@@ -39,7 +39,7 @@ Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to p
    For worker:
 
    ```bash
-   cd server
+   cd worker
    npm i
    npm run dev
    ```
