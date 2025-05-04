@@ -2,6 +2,8 @@ import { Player } from "./Matchmaking";
 import RedisService from "./Redis";
 import { Socket } from "socket.io";
 
+const ROUND_TIMEOUT = 92; // seconds
+
 interface IResponse {
   player_id: string;
   response: string;
@@ -130,7 +132,7 @@ class MatchService {
           roundNumber: parsedMatchState.currentRound,
         });
       }
-    }, 60 * 1000);
+    }, ROUND_TIMEOUT * 1000);
   }
 
   public async handleRoundResponse(message: any) {
