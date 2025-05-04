@@ -21,6 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Timer from "@/components/Timer";
+import confetti from "canvas-confetti";
 
 interface IMatchInfo {
   matchId: string;
@@ -48,6 +50,36 @@ export interface IPlayer {
   rank: number;
 }
 
+function showConfetti() {
+  const end = Date.now() + 3 * 1000; // 3 seconds
+  const colors = ["#8b5cf6", "#fd8bbc", "#eca184", "#f8deb1"];
+
+  const frame = () => {
+    if (Date.now() > end) return;
+
+    confetti({
+      particleCount: 2,
+      angle: 60,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 0, y: 0.5 },
+      colors: colors,
+    });
+    confetti({
+      particleCount: 2,
+      angle: 120,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 1, y: 0.5 },
+      colors: colors,
+    });
+
+    requestAnimationFrame(frame);
+  };
+
+  frame();
+}
+
 const Battle = () => {
   const { id: matchId } = useParams();
   const [loadingInfo, setLoadingInfo] = useState(false);
@@ -56,8 +88,14 @@ const Battle = () => {
   const [opponentPlayer, setOpponentPlayer] = useState<IPlayer | null>(null);
   const { data: session } = useSession();
   const router = useRouter();
-  const { initialChallenge, setPrompt, prompt, isMatchEnd, winner } =
-    useSocket();
+  const {
+    initialChallenge,
+    setPrompt,
+    prompt,
+    isMatchEnd,
+    winner,
+    roundNumber,
+  } = useSocket();
 
   const getCurrentPlayer = useCallback(() => {
     if (!session || !session.user) return null;
@@ -82,6 +120,13 @@ const Battle = () => {
     setCurrentPlayer(currentPlayer);
     setOpponentPlayer(opponentPlayer);
   }, [matchInfo, getCurrentPlayer, getOpponentPlayer]);
+
+  // show confetti
+  useEffect(() => {
+    if (matchInfo && isMatchEnd && winner === currentPlayer?._id) {
+      showConfetti();
+    }
+  }, [matchInfo, isMatchEnd, winner, currentPlayer]);
 
   useEffect(() => {
     if (!matchId) return;
@@ -123,7 +168,7 @@ const Battle = () => {
           }}
         />
 
-        <div className="w-full h-full flex justify-center items-center gap-4  animate-pulse">
+        <div className="w-full h-full flex justify-center items-center gap-4 animate-pulse">
           <Swords className="text-white size-7" />
           <p className="text-white text-lg font-bold">Loading Match...</p>
         </div>
@@ -186,80 +231,90 @@ const Battle = () => {
         />
 
         {isMatchEnd && (
-          <AlertDialog open={isMatchEnd}>
-            <AlertDialogContent
-              className="border border-violet-300 bg-black/40 text-white 
+          <>
+            <AlertDialog open={isMatchEnd}>
+              <AlertDialogContent
+                className="border border-violet-300 bg-black/40 text-white 
               p-6 rounded-lg backdrop-blur-lg shadow-[0_0_10px_#8b5cf6,0_0_4px_#8b5cf6]"
-            >
-              <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-xl text-center text-violet-300">
-                  {winner === currentPlayer._id
-                    ? "You've won the match!"
-                    : winner === "none"
-                      ? "It's a draw!"
-                      : "Better Luck Next Time!"}
-                </AlertDialogTitle>
-                <AlertDialogDescription className="font-medium text-sm text-white">
-                  {winner === currentPlayer._id
-                    ? "Congratulations! You have emerged victorious in this battle of wits. Your skills and creativity have shone through, and you have proven yourself to be a formidable opponent."
-                    : winner === "none"
-                      ? `
+              >
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-bold text-xl text-center text-violet-300">
+                    {winner === currentPlayer._id
+                      ? "You've won the match!"
+                      : winner === "none"
+                        ? "It's a draw!"
+                        : "Better Luck Next Time!"}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="font-medium text-sm text-white">
+                    {winner === currentPlayer._id
+                      ? "Congratulations! You have emerged victorious in this battle of wits. Your skills and creativity have shone through, and you have proven yourself to be a formidable opponent."
+                      : winner === "none"
+                        ? `
                       The match has ended in a draw! Both players have shown exceptional skill and creativity, making it a truly memorable battle.
                     `
-                      : "The match has come to an end, and while you may not have emerged as the victor this time, your efforts and creativity were commendable. Every battle is a learning experience, and we hope to see you back in action soon!"}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogAction
-                  onClick={() => router.replace("/play")}
-                  className="uppercase border border-white font-bold text-sm px-4 py-5
+                        : "The match has come to an end, and while you may not have emerged as the victor this time, your efforts and creativity were commendable. Every battle is a learning experience, and we hope to see you back in action soon!"}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction
+                    onClick={() => router.replace("/play")}
+                    className="uppercase border border-white font-bold text-sm px-4 py-5
              text-white hover:bg-white hover:text-violet-500 
              bg-transparent relative z-10 
              shadow-[0_0_4px_#8b5cf6,0_0_10px_#8b5cf6] 
              hover:shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6] 
              transition-all duration-200 ease-in-out"
-                >
-                  Return Home
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  >
+                    Return Home
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
         )}
 
         {/* Content */}
         <main className="flex gap-6 px-8 py-6 h-screen">
           <div className="flex-[2] h-full flex flex-col">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-4 px-3 py-2 rounded-lg border-b border-red-500 bg-gradient-to-r from-red-900/30 via-red-800/10 to-transparent">
-                <Avatar className="text-black cursor-pointer">
-                  <AvatarImage src={"/default_avatar.jpg"} />
-                  <AvatarFallback>TN</AvatarFallback>
-                </Avatar>
-                <div className="text-start">
-                  <p className="text-base font-bold tracking-widest max-w-[160px] line-clamp-1">
-                    <span className="inline size-4"></span>
-                    {opponentPlayer.username}
-                  </p>
-                  <p className="text-xs font-light">
-                    Rank {opponentPlayer.rank}
-                  </p>
+            <div className="flex items-start justify-between pr-6">
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-4 px-3 py-2 rounded-lg border-b border-red-500 bg-gradient-to-r from-red-900/30 via-red-800/10 to-transparent">
+                  <Avatar className="text-black cursor-pointer">
+                    <AvatarImage src={"/default_avatar.jpg"} />
+                    <AvatarFallback>TN</AvatarFallback>
+                  </Avatar>
+                  <div className="text-start">
+                    <p className="text-base font-bold tracking-widest max-w-[160px] line-clamp-1">
+                      <span className="inline size-4"></span>
+                      {opponentPlayer.username}
+                    </p>
+                    <p className="text-xs font-light">
+                      Rank {opponentPlayer.rank}
+                    </p>
+                  </div>
+                </div>
+                <Swords className="text-white size-7" />
+                <div className="flex gap-4 items-center px-3 py-2 rounded-lg border-b border-violet-500 bg-gradient-to-l from-violet-900/30 via-violet-800/10 to-transparent">
+                  <div className="text-end">
+                    <p className="text-base font-bold tracking-widest">
+                      <span className="inline size-4"></span>
+                      You
+                    </p>
+                    <p className="text-xs font-light">
+                      Rank {currentPlayer.rank}
+                    </p>
+                  </div>
+                  <Avatar className="text-black cursor-pointer">
+                    <AvatarImage src={"/default_avatar.jpg"} />
+                    <AvatarFallback>TN</AvatarFallback>
+                  </Avatar>
                 </div>
               </div>
-              <Swords className="text-white size-7" />
-              <div className="flex gap-4 items-center px-3 py-2 rounded-lg border-b border-violet-500 bg-gradient-to-l from-violet-900/30 via-violet-800/10 to-transparent">
-                <div className="text-end">
-                  <p className="text-base font-bold tracking-widest">
-                    <span className="inline size-4"></span>
-                    You
-                  </p>
-                  <p className="text-xs font-light">
-                    Rank {currentPlayer.rank}
-                  </p>
-                </div>
-                <Avatar className="text-black cursor-pointer">
-                  <AvatarImage src={"/default_avatar.jpg"} />
-                  <AvatarFallback>TN</AvatarFallback>
-                </Avatar>
+              <div className="text-end">
+                <Timer />
+                <p className="text-sm font-bold text-white">
+                  Round: {roundNumber}/3
+                </p>
               </div>
             </div>
             <div className="flex-1 max-w-4xl px-4 mt-6 flex flex-col overflow-hidden">
@@ -276,7 +331,6 @@ const Battle = () => {
                 <ChatMessage />
                 <OpponentChatMessage />
                 <ChatMessage />
-                {/* Add more messages to test scroll */}
               </div>
               {initialChallenge && (
                 <div className="flex fade-pullup items-start overflow-hidden gap-4">
