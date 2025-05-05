@@ -1,8 +1,7 @@
 "use client";
 
 import ButtonPrimary from "@/components/ButtonPrimary";
-import ChatMessage from "@/components/ChatMessage";
-import OpponentChatMessage from "@/components/OpponentChatMessage";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Swords } from "lucide-react";
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Timer from "@/components/Timer";
 import confetti from "canvas-confetti";
-
+import ChatContainer from "@/components/ChatContainer";
 interface IMatchInfo {
   matchId: string;
   players: {
@@ -87,14 +86,18 @@ const Battle = () => {
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer | null>(null);
   const [opponentPlayer, setOpponentPlayer] = useState<IPlayer | null>(null);
   const { data: session } = useSession();
+  const [prompt, setPrompt] = useState<string | null>(null);
+
   const router = useRouter();
   const {
     initialChallenge,
-    setPrompt,
-    prompt,
+    submittedPrompt,
     isMatchEnd,
     winner,
     roundNumber,
+    isPromptSubmitted,
+    setIsPromptSubmitted,
+    setChatMessages,
   } = useSocket();
 
   const getCurrentPlayer = useCallback(() => {
@@ -318,23 +321,11 @@ const Battle = () => {
               </div>
             </div>
             <div className="flex-1 max-w-4xl px-4 mt-6 flex flex-col overflow-hidden">
-              {/* Scrollable messages */}
-              <div className="py-4 px-2 flex-1 flex flex-col gap-6 overflow-y-auto pr-2 scrollbar-hide">
-                <ChatMessage />
-                <OpponentChatMessage />
-                <ChatMessage />
-                <OpponentChatMessage />
-                <ChatMessage />
-                <OpponentChatMessage />
-                <ChatMessage />
-                <OpponentChatMessage />
-                <ChatMessage />
-                <OpponentChatMessage />
-                <ChatMessage />
-              </div>
+              <ChatContainer currentPlayer={currentPlayer} />
               {initialChallenge && (
                 <div className="flex fade-pullup items-start overflow-hidden gap-4">
                   <Textarea
+                    disabled={isPromptSubmitted}
                     value={prompt ?? ""}
                     onChange={(e) => {
                       setPrompt(e.target.value);
@@ -343,7 +334,23 @@ const Battle = () => {
               focus-visible:ring-0 focus-visible:outline-none scrollbar-hide"
                     placeholder="Type your prompt here..."
                   />
-                  <ButtonPrimary className="max-w-12">
+                  <ButtonPrimary
+                    onClick={() => {
+                      setPrompt("");
+                      setIsPromptSubmitted(true);
+                      const p = prompt
+                        ? prompt.trim().length === 0
+                          ? "EMPTY RESPONSE"
+                          : prompt
+                        : "EMPTY RESPONSE";
+                      submittedPrompt.current = p;
+                      setChatMessages((prev) => [
+                        ...prev,
+                        { message: p, sender: currentPlayer._id },
+                      ]);
+                    }}
+                    className="max-w-12"
+                  >
                     <Send />
                   </ButtonPrimary>
                 </div>
