@@ -204,6 +204,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     disconnectSocket(socket);
   }, []);
 
+  const onOpponentResponse = useCallback((matchInfo: any) => {
+    const { sender, response } = matchInfo;
+    console.log("Opponent response: ", response);
+  }, []);
+
   const disconnectSocket = useCallback(
     (_socket: Socket) => {
       if (socket) {
@@ -217,6 +222,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         _socket.off("error:matchmaking", onMatchmakingError);
         _socket.off("error:matchmakingTimeout", onMatchmakingTimeout);
         _socket.off("error:alreadyInLobby", onAlreadyInLobby);
+        _socket.off("event:opponentResponse", onOpponentResponse);
+
         socket.current = undefined;
       }
     },
@@ -235,6 +242,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     _socket.on("event:roundEnd", onRoundEnd);
     _socket.on("event:roundResult", onRoundResult);
     _socket.on("event:matchEnd", onMatchEnd);
+    _socket.on("event:opponentResponse", onOpponentResponse);
 
     socket.current = _socket;
 
