@@ -39,7 +39,6 @@ const BattleLog = (props: BattleLogProps) => {
         isNew: true,
       };
       setRounds((prev) => [...prev, newRound]);
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [challenge, winner, reason, currentPlayer, opponentPlayer]);
 
@@ -54,6 +53,14 @@ const BattleLog = (props: BattleLogProps) => {
       );
     }, 800);
     return () => clearTimeout(timeout);
+  }, [rounds]);
+
+  useEffect(() => {
+    if (bottomRef.current && rounds.length > 0) {
+      bottomRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
   }, [rounds]);
 
   return (
