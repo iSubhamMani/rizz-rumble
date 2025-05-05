@@ -3,7 +3,10 @@
 
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  RefObject,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -14,6 +17,11 @@ import { io, Socket } from "socket.io-client";
 
 interface SocketProviderProps {
   children: ReactNode;
+}
+
+interface ChatMessage {
+  sender: string;
+  message: string;
 }
 
 interface SocketContextType {
@@ -27,14 +35,17 @@ interface SocketContextType {
   initialChallenge: string | null;
   winner: string | null;
   reason: string | null;
-  prompt: string | null;
   roundNumber: number;
   resetTimer: boolean;
   judging: boolean;
+  chatMessages: ChatMessage[];
+  isPromptSubmitted: boolean;
   startMatchmaking: (player_id: string) => any;
+  setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>;
   cancelMatchmaking: (player_id: string) => any;
-  setPrompt: (prompt: string | null) => void;
   setInitialChallenge: (challenge: string | null) => void;
+  setIsPromptSubmitted: (isSubmitted: boolean) => void;
+  submittedPrompt: RefObject<string>;
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
@@ -58,23 +69,20 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [roundNumber, setRoundNumber] = useState<number>(1);
   const [winner, setWinner] = useState<string | null>(null);
   const [reason, setReason] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string | null>(null);
   const [isMatchEnd, setIsMatchEnd] = useState(false);
-  const promptRef = useRef<string | null>(null);
+  const submittedPrompt = useRef<string>("");
   const [resetTimer, setResetTimer] = useState(false);
   const [judging, setJudging] = useState(false);
   const [initialChallenge, setInitialChallenge] = useState<string | null>(null);
-
-  useEffect(() => {
-    promptRef.current = prompt;
-  }, [prompt]);
+  const [isPromptSubmitted, setIsPromptSubmitted] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   const onRoundEnd = useCallback(
     (matchInfo: any) => {
       setResetTimer(false);
       setJudging(true);
       if (socket.current) {
-        console.log("Prompt:", promptRef.current);
+        const res = submittedPrompt.current;
         const { matchId, player_id, roundNumber } = matchInfo as {
           matchId: string;
           player_id: string;
@@ -84,35 +92,40 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         const message = {
           matchId,
           player_id,
-          response: promptRef.current,
+          response: res,
           roundNumber,
         };
-
         socket.current.emit("event:roundResponse", JSON.stringify(message));
       }
     },
     [socket]
   );
 
-  const onRoundResult = useCallback((matchInfo: any) => {
-    console.log("ROUND RESULT");
-    const { nextRound, winner, reason, newChallenge } = matchInfo;
+  const onRoundResult = useCallback(
+    (matchInfo: any) => {
+      const { nextRound, winner, reason, newChallenge } = matchInfo;
 
-    if (roundNumber < 3) setRoundNumber(nextRound);
-    setWinner(winner);
-    setReason(reason);
-    setChallenge(newChallenge);
-    setResetTimer(true);
-    setJudging(false);
-  }, []);
+      if (roundNumber < 3) setRoundNumber(nextRound);
+      setWinner(winner);
+      setReason(reason);
+      setChallenge(newChallenge);
+      setResetTimer(true);
+      setIsPromptSubmitted(false);
+      submittedPrompt.current = "";
+      setJudging(false);
+    },
+    [roundNumber]
+  );
 
   const onMatchEnd = useCallback((matchInfo: any) => {
-    console.log("MATCH END");
     const { winner } = matchInfo;
     setWinner(winner);
     setReason(null);
     setIsMatchEnd(true);
+    setJudging(false);
     setMatchFound(false);
+    setIsPromptSubmitted(false);
+    submittedPrompt.current = "";
     setChallenge(null);
   }, []);
 
@@ -128,7 +141,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setReason(null);
         setRoundNumber(1);
         setInitialChallenge(null);
-        setPrompt(null);
         setMatchId(null);
         setInMatchmaking(true);
         socket.current.emit("event:matchmaking", JSON.stringify({ player_id }));
@@ -206,7 +218,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const onOpponentResponse = useCallback((matchInfo: any) => {
     const { sender, response } = matchInfo;
-    console.log("Opponent response: ", response);
+    setChatMessages((prev) => [...prev, { sender, message: response }]);
   }, []);
 
   const disconnectSocket = useCallback(
@@ -256,8 +268,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       value={{
         startMatchmaking,
         cancelMatchmaking,
-        setPrompt,
         setInitialChallenge,
+        setIsPromptSubmitted,
+        setChatMessages,
         inMatchmaking,
         isMatchEnd,
         matchFound,
@@ -269,9 +282,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         winner,
         reason,
         roundNumber,
-        prompt,
         resetTimer,
         judging,
+        chatMessages,
+        isPromptSubmitted,
+        submittedPrompt,
       }}
     >
       {children}
