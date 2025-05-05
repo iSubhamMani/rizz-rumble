@@ -197,6 +197,16 @@ class MatchService {
         // push to queue for judge
         await this.redis.Queue.lpush("game:judgeQueue", matchId);
       }
+
+      // send message to other player
+      await this.redis.Publisher.publish(
+        "game:opponentResponse",
+        JSON.stringify({
+          sender: player_id,
+          message: response,
+          matchId,
+        })
+      );
     } catch (error) {
       console.error("Error handling round response:", error);
     }
@@ -293,6 +303,35 @@ class MatchService {
       }
 
       await this.redis.Publisher.publish("game:startRound", matchId);
+    }
+  }
+
+  public async handleOpponentResponse(message: any) {
+    const parsed = typeof message === "string" ? JSON.parse(message) : message;
+    const { sender, message: response, matchId } = parsed;
+
+    const matchState = await this.redis.Store.get(matchId);
+
+    if (!matchState) {
+      console.log("Match state not found");
+      return;
+    }
+
+    const parsedMatchState = JSON.parse(matchState) as MatchState;
+    const { players } = parsedMatchState;
+    const receiver = players.find(
+      (player) => player.player_id !== sender
+    )?.socket_id;
+
+    if (receiver) {
+      const receiverSocket = this._io.sockets.sockets.get(receiver);
+      if (receiverSocket) {
+        receiverSocket.emit("event:opponentResponse", {
+          sender,
+          response,
+          matchId,
+        });
+      }
     }
   }
 }
