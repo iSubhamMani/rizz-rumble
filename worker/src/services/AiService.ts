@@ -103,18 +103,24 @@ class AiService {
     }
 
     const prompt = `
-      You are a problem setter in a 1v1 prompt battle game.
-     Your task is to generate a short, creative topic (max 5-7 words) that can challenge two users to write the best possible prompt. 
-     The topic should cover a wide range of ideas (e.g., fantasy, science, technology, emotions, survival) and be open-ended enough to allow for imaginative prompt-writing but nothing too complicated.
-     Try to use simple language and avoid using any technical jargon.
+      You are a challenge designer for a 1v1 prompt battle game.
 
-     The topic should not be similar to the following topics, if there are any:
+      Your task is to generate a short, creative topic (5-7 words max) that will challenge users to write the best **prompt** — not a story — based on that topic.
+
+      The topic should:
+      - Encourage users to write creative, useful, or thought-provoking prompts.
+      - Be grounded in real-life or practical scenarios (e.g., productivity, creativity, learning, tools, social situations).
+      - Avoid fantasy tropes or storytelling themes.
+      - Be simple, clear, and non-technical.
+      - NOT be a story starter or contain characters, plots, or magical events.
+
+      Avoid generating topics similar to:
       ${previousChallenges.join(", ")}
 
-     Structure the response strictly in this exact JSON format:
-    {
-      "newChallenge": "the generated topic" 
-    }
+      Return only in this JSON format:
+      {
+        "newChallenge": "the generated topic"
+      }
     `;
 
     const response = await ai.models.generateContent({
