@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Swords } from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -27,6 +26,8 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { verifyEmail } from "@/actions/email/verify";
 import { sendOtp } from "@/actions/email/send";
 import { useRouter } from "next/navigation";
+import StyledButtonPrimary from "./StyledButtonPrimary";
+import PrimaryButton from "./PrimaryButton";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -261,23 +262,22 @@ const JoinButton = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          size="lg"
-          className="uppercase fade-pullup mt-8 border border-white font-bold text-sm sm:text-base p-6 
-             text-white hover:bg-white hover:text-violet-500 
-             bg-transparent relative z-10 
-             shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6] 
-             hover:shadow-[0_0_20px_#8b5cf6,0_0_40px_#8b5cf6] 
-             transition-all duration-200 ease-in-out"
-        >
-          <Swords className="size-6 mr-2 hover:text-violet-500  drop-shadow-[0_0_6px_#8b5cf6]" />
-          <span>Join the battle</span>
-        </Button>
+        <StyledButtonPrimary>
+          <div className="relative flex items-center justify-center gap-3">
+            <Swords className="size-4 sm:size-5 md:size-6 group-hover:rotate-12 transition-transform duration-300" />
+            <span className="drop-shadow-lg">JOIN THE BATTLE</span>
+            <Swords className="size-4 sm:size-5 md:size-6 group-hover:-rotate-12 transition-transform duration-300" />
+          </div>
+        </StyledButtonPrimary>
       </DialogTrigger>
       <DialogContent
-        className="border border-violet-300 bg-black/40 text-white 
-        p-6 rounded-lg backdrop-blur-lg shadow-md"
+        className="border-2 border-amber-900 bg-transparent/40 text-white 
+        p-6 rounded-none backdrop-blur-lg shadow-md font-secondary"
       >
+        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {form === "login"
@@ -288,7 +288,7 @@ const JoinButton = () => {
           </DialogTitle>
         </DialogHeader>
         {form === "otp" && (
-          <DialogDescription className="text-sm">
+          <DialogDescription className="text-sm text-amber-300">
             An otp has been sent to your email
           </DialogDescription>
         )}
@@ -307,9 +307,9 @@ const JoinButton = () => {
                     <InputOTPSlot
                       key={index}
                       index={index}
-                      className="w-12 h-14 text-center text-white text-xl bg-violet-400/20 
-              border-x-0 border-t-0 border-b border-violet-500 rounded-sm 
-              focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-12 h-14 text-center text-white text-xl bg-amber-800/20
+              border-x-0 border-t-0 border-b border-amber-900 rounded-sm 
+              focus:outline-none focus:ring-2 focus:ring-amber-600"
                     />
                   ))}
                 </InputOTPGroup>
@@ -317,7 +317,7 @@ const JoinButton = () => {
               <p className="text-sm text-center">
                 Didn&apos;t receive the OTP?{" "}
                 <span
-                  className="text-violet-400 font-bold cursor-pointer hover:underline"
+                  className="text-amber-300 font-bold cursor-pointer hover:underline"
                   onClick={() => sendOtpToEmail(email)}
                 >
                   Resend OTP
@@ -337,15 +337,15 @@ const JoinButton = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Create a username"
                 required
-                className="uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
-                text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
             </div>
           )}
           {form !== "otp" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-bold">
+                <Label htmlFor="email" className="text-sm font-bold">
                   Email
                 </Label>
                 <Input
@@ -354,8 +354,8 @@ const JoinButton = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="placeholder:uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
-                text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
               <div className="space-y-2">
@@ -369,17 +369,17 @@ const JoinButton = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="border-x-0 border-t-0 border-b rounded-sm border-violet-500 placeholder:uppercase w-full p-3 bg-black/80
-                    text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                   <button
                     type="button"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   >
                     {isPasswordVisible ? (
-                      <EyeOff className="size-5 text-violet-500" />
+                      <EyeOff className="size-5 text-amber-800" />
                     ) : (
-                      <Eye className="size-5 text-violet-500" />
+                      <Eye className="size-5 text-amber-800" />
                     )}
                   </button>
                 </div>
@@ -388,12 +388,7 @@ const JoinButton = () => {
           )}
           <DialogFooter className="mt-4">
             <div className="flex flex-col w-full">
-              <Button
-                type="submit"
-                disabled={loading}
-                className="uppercase transition-all duration-200 ease-in-out w-full border border-white text-white font-bold py-5 bg-transparent
-                    hover:bg-white hover:text-violet-500 shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6]"
-              >
+              <PrimaryButton type="submit" disabled={loading}>
                 {loading && <Swords className="animate-pulse " />}
                 {!loading &&
                   (form === "login"
@@ -401,7 +396,7 @@ const JoinButton = () => {
                     : form === "otp"
                       ? "Verify"
                       : "Sign Up")}
-              </Button>
+              </PrimaryButton>
               {form !== "otp" && (
                 <div>
                   <p className="text-sm text-center mt-6">
@@ -409,7 +404,7 @@ const JoinButton = () => {
                       <>
                         Don&apos;t have an account?{" "}
                         <span
-                          className="text-violet-400 font-bold cursor-pointer hover:underline"
+                          className="text-amber-300 font-bold cursor-pointer hover:underline"
                           onClick={() => setForm("signup")}
                         >
                           Sign up
@@ -419,7 +414,7 @@ const JoinButton = () => {
                       <>
                         Already have an account?{" "}
                         <span
-                          className="text-violet-400 font-bold cursor-pointer hover:underline"
+                          className="text-amber-300 font-bold cursor-pointer hover:underline"
                           onClick={() => setForm("login")}
                         >
                           Login

@@ -1,19 +1,6 @@
 import type { Metadata } from "next";
-import { Anton, Raleway } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-
-const anton = Anton({
-  variable: "--font-anton",
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const raleway = Raleway({
-  variable: "--font-raleway",
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
 
 export const metadata: Metadata = {
   title: "Prompt Brawl",
@@ -27,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${anton.variable} ${raleway.variable} uppercase antialiased`}
-      >
+      <body className={`uppercase antialiased`}>
         <Toaster position="top-center" />
 
         {children}
