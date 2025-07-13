@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import Orb from "./Orb/Orb";
 import {
   Dialog,
   DialogContent,
@@ -10,42 +9,35 @@ import {
 } from "./ui/dialog";
 import { Swords } from "lucide-react";
 import GameModes from "./GameModes";
+import StyledButtonPrimary from "./StyledButtonPrimary";
 
 const PlayBtn = ({ player }: { player: string }) => {
   return (
-    <Orb
-      hoverIntensity={0.0}
-      rotateOnHover={true}
-      hue={317}
-      forceHoverState={false}
-    >
-      <Dialog>
-        <DialogTrigger asChild>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button
-              className="shadow-3xl flex items-center animate-pulse duration-800 text-violet-300 uppercase rounded-full p-20 sm:p-40 text-lg sm:text-xl md:text-2xl font-bold
-        "
-            >
-              Play
-              <Swords className="size-6 ml-2" />
-            </button>
+    <Dialog>
+      <DialogTrigger asChild>
+        <StyledButtonPrimary className="mt-6">
+          <div className="relative flex items-center justify-center gap-3">
+            <Swords className="size-4 sm:size-5 md:size-6 group-hover:rotate-12 transition-transform duration-300" />
+            <span className="drop-shadow-lg">Play</span>
+            <Swords className="size-4 sm:size-5 md:size-6 group-hover:-rotate-12 transition-transform duration-300" />
           </div>
-        </DialogTrigger>
+        </StyledButtonPrimary>
+      </DialogTrigger>
 
-        <DialogContent
-          className="border border-violet-300 bg-black/40 text-white 
-                    p-6 rounded-lg backdrop-blur-lg shadow-md"
-        >
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold">
-              Select Mode
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="max-w-2xl bg-amber-900/20 backdrop-blur-md border-amber-900 border-4 rounded-lg">
+        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold font-secondary">
+            Select Mode
+          </DialogTitle>
+        </DialogHeader>
 
-          <GameModes player={player} />
-        </DialogContent>
-      </Dialog>
-    </Orb>
+        <GameModes player={player} />
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -28,6 +28,7 @@ import { sendOtp } from "@/actions/email/send";
 import { useRouter } from "next/navigation";
 import StyledButtonPrimary from "./StyledButtonPrimary";
 import PrimaryButton from "./PrimaryButton";
+import { toastStyle } from "@/lib/toastStyle";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -68,14 +69,7 @@ const JoinButton = () => {
         error instanceof Error ? error.message : "Error validating credentials",
         {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         }
       );
       return false;
@@ -99,14 +93,7 @@ const JoinButton = () => {
       if (res.success) {
         toast(res.message, {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setPassword("");
         setUsername("");
@@ -115,14 +102,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error signing up", {
         duration: 5000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     } finally {
       setLoading(false);
@@ -140,14 +120,7 @@ const JoinButton = () => {
       if (res.success) {
         toast("OTP verified successfully", {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setForm("login");
         setOtp("");
@@ -155,14 +128,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error Verifying Email", {
         duration: 3000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     } finally {
       setLoading(false);
@@ -183,14 +149,7 @@ const JoinButton = () => {
       if (res?.ok) {
         toast("Logged in successfully", {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setEmail("");
         setPassword("");
@@ -200,14 +159,7 @@ const JoinButton = () => {
       if (error instanceof Error && error.message === "email_not_verified") {
         toast("Please verify your email first", {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setForm("otp");
         // send otp to email
@@ -215,14 +167,7 @@ const JoinButton = () => {
       } else {
         toast(error instanceof Error ? error.message : "Error signing in", {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
       }
     } finally {
@@ -247,14 +192,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error sending OTP", {
         duration: 5000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     }
   };
@@ -327,7 +265,7 @@ const JoinButton = () => {
           )}
           {form === "signup" && (
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-bold">
+              <Label htmlFor="username" className="text-sm font-bold">
                 Username
               </Label>
               <Input
@@ -337,7 +275,8 @@ const JoinButton = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Create a username"
                 required
-                className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                autoComplete="off"
+                className="font-primary border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
                 text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
             </div>
@@ -352,9 +291,10 @@ const JoinButton = () => {
                   id="email"
                   type="email"
                   value={email}
+                  autoComplete="off"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                  className="font-primary border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
                 text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
@@ -367,9 +307,10 @@ const JoinButton = () => {
                     id="password"
                     type={isPasswordVisible ? "text" : "password"}
                     value={password}
+                    autoComplete="off"
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="placeholder:uppercase border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
+                    className="font-primary border-x-2 border-t-0 border-b-0 rounded-none border-amber-900 w-full p-4 md:p-6 bg-amber-800/20
                 text-white focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                   <button
@@ -388,8 +329,12 @@ const JoinButton = () => {
           )}
           <DialogFooter className="mt-4">
             <div className="flex flex-col w-full">
-              <PrimaryButton type="submit" disabled={loading}>
-                {loading && <Swords className="animate-pulse " />}
+              <PrimaryButton
+                className="flex justify-center"
+                type="submit"
+                disabled={loading}
+              >
+                {loading && <Swords className="animate-pulse text-white" />}
                 {!loading &&
                   (form === "login"
                     ? "Login"
