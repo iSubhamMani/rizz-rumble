@@ -18,10 +18,10 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
 
       {/* Main content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center">
         {/* Game title */}
         <div className="mb-8">
-          <h2 className="font-tertiary text-amber-400 text-2xl md:text-3xl mb-4 tracking-widest opacity-90">
+          <h2 className="font-tertiary uppercase text-amber-400 text-2xl md:text-3xl mb-4 tracking-widest opacity-90">
             PROMPT
             <span>
               <Swords className="inline -mt-1 mx-2" />
@@ -32,7 +32,7 @@ export default function Home() {
         </div>
 
         {/* Main headline */}
-        <h1 className="font-primary text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-bold mb-6 leading-tight">
+        <h1 className="font-primary text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
           <span className="block text-amber-100 mb-2">ENTER THE</span>
           <span className="block text-amber-200 mb-2">ULTIMATE</span>
           <span className="block text-amber-300 western-glow">

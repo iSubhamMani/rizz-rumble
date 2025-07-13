@@ -14,9 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`uppercase antialiased`}>
+      <body className={`antialiased`}>
         <Toaster position="top-center" />
-
         {children}
       </body>
     </html>
