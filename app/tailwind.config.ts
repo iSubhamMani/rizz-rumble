@@ -95,10 +95,16 @@ export default {
             height: "0",
           },
         },
+        scanMove: {
+          "0%": { left: "-33%", width: "5%" },
+          "50%": { width: "40%" },
+          "100%": { left: "100%", width: "5%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "scan-move": "scanMove 1.6s ease-in-out infinite",
       },
     },
   },
