@@ -3,7 +3,7 @@ import React from "react";
 import { authOptions } from "../../api/auth/[...nextauth]/config";
 import { UserModel } from "@/models/User";
 import { connectDB } from "@/lib/db";
-import TopPlayerInfo from "@/components/TopPlayerInfo";
+import ProfileInfo from "@/components/ProfileInfo";
 import PlayBtn from "@/components/PlayBtn";
 import Leaderboard from "@/components/Leaderboard";
 import MatchmakingDialog from "@/components/MatchmakingDialog";
@@ -155,6 +155,36 @@ const PlayPage = async () => {
               ))}
             </CardContent>
           </Card>
+        </div>
+      </div>
+      <div
+        className="absolute left-1/2 -translate-x-1/2" // Center the sphere horizontally
+        style={{
+          width: "min(100vw, 800px)", // Max width to ensure it doesn't get too big on ultra-wide screens
+          height: "min(100vw, 800px)", // Make height equal to width for a perfect circle
+          bottom: "-min(100vw, 800px) / 2", // Adjust this to control how much of the sphere is visible (e.g., half its height)
+          // You might need to fine-tune the bottom value based on how much of the glow you want showing.
+          // For example, if you want only the top 20% of the sphere visible, bottom: '-80%'
+        }}
+      >
+        <div className="relative w-full h-full">
+          <div
+            className="absolute inset-0 rounded-full blur-3xl opacity-70"
+            style={{ backgroundColor: "#34495e", filter: "blur(400px)" }} // Increased blur for a stronger glow
+          ></div>
+          <div
+            className="absolute inset-0 rounded-full blur-3xl opacity-60"
+            style={{ backgroundColor: "#2c3e50", filter: "blur(150px)" }} // Even more blur for depth
+          ></div>
+          <div
+            className="absolute inset-0 rounded-full blur-3xl opacity-70"
+            style={{ backgroundColor: "#4a6d7c", filter: "blur(400px)" }} // Widest blur for the outer glow
+          ></div>
+          {/* Inner, brighter glow */}
+          <div
+            className="absolute inset-0 rounded-full blur-xl opacity-60"
+            style={{ backgroundColor: "#2d403c", filter: "blur(100px)" }}
+          ></div>
         </div>
       </div>
     </main>

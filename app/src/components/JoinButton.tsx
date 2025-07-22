@@ -25,6 +25,9 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { verifyEmail } from "@/actions/email/verify";
 import { sendOtp } from "@/actions/email/send";
 import { useRouter } from "next/navigation";
+import StyledButtonPrimary from "./StyledButtonPrimary";
+import PrimaryButton from "./PrimaryButton";
+import { toastStyle } from "@/lib/toastStyle";
 
 const JoinButton = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -65,14 +68,7 @@ const JoinButton = () => {
         error instanceof Error ? error.message : "Error validating credentials",
         {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         }
       );
       return false;
@@ -96,14 +92,7 @@ const JoinButton = () => {
       if (res.success) {
         toast(res.message, {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setPassword("");
         setUsername("");
@@ -112,14 +101,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error signing up", {
         duration: 5000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     } finally {
       setLoading(false);
@@ -137,14 +119,7 @@ const JoinButton = () => {
       if (res.success) {
         toast("OTP verified successfully", {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setForm("login");
         setOtp("");
@@ -152,14 +127,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error Verifying Email", {
         duration: 3000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     } finally {
       setLoading(false);
@@ -180,14 +148,7 @@ const JoinButton = () => {
       if (res?.ok) {
         toast("Logged in successfully", {
           duration: 3000,
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setEmail("");
         setPassword("");
@@ -197,14 +158,7 @@ const JoinButton = () => {
       if (error instanceof Error && error.message === "email_not_verified") {
         toast("Please verify your email first", {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
         setForm("otp");
         // send otp to email
@@ -212,14 +166,7 @@ const JoinButton = () => {
       } else {
         toast(error instanceof Error ? error.message : "Error signing in", {
           duration: 5000,
-          style: {
-            backgroundColor: "#EE4B2B",
-            color: "white",
-            border: "1px solid rgba(139, 92, 246, 0.5)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "8px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-          },
+          style: { ...toastStyle, textTransform: "capitalize" },
         });
       }
     } finally {
@@ -244,14 +191,7 @@ const JoinButton = () => {
     } catch (error) {
       toast(error instanceof Error ? error.message : "Error sending OTP", {
         duration: 5000,
-        style: {
-          backgroundColor: "#EE4B2B",
-          color: "white",
-          border: "1px solid rgba(139, 92, 246, 0.5)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
-        },
+        style: { ...toastStyle, textTransform: "capitalize" },
       });
     }
   };
@@ -276,6 +216,10 @@ const JoinButton = () => {
         className="border border-violet-300
         p-6 rounded-lg shadow-md bg-white/10 backdrop-blur-lg border-white/20 text-white"
       >
+        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
+        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {form === "login"
@@ -286,7 +230,7 @@ const JoinButton = () => {
           </DialogTitle>
         </DialogHeader>
         {form === "otp" && (
-          <DialogDescription className="text-sm">
+          <DialogDescription className="text-sm text-amber-300">
             An otp has been sent to your email
           </DialogDescription>
         )}
@@ -315,7 +259,7 @@ const JoinButton = () => {
               <p className="text-sm text-center">
                 Didn&apos;t receive the OTP?{" "}
                 <span
-                  className="text-violet-400 font-bold cursor-pointer hover:underline"
+                  className="text-amber-300 font-bold cursor-pointer hover:underline"
                   onClick={() => sendOtpToEmail(email)}
                 >
                   Resend OTP
@@ -325,7 +269,7 @@ const JoinButton = () => {
           )}
           {form === "signup" && (
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-bold">
+              <Label htmlFor="username" className="text-sm font-bold">
                 Username
               </Label>
               <input
@@ -343,13 +287,14 @@ const JoinButton = () => {
           {form !== "otp" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-bold">
+                <Label htmlFor="email" className="text-sm font-bold">
                   Email
                 </Label>
                 <input
                   id="email"
                   type="email"
                   value={email}
+                  autoComplete="off"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
                   className="border-x-0 border-t-0 border-b rounded-sm border-white w-full p-3 bg-white/10
@@ -365,6 +310,7 @@ const JoinButton = () => {
                     id="password"
                     type={isPasswordVisible ? "text" : "password"}
                     value={password}
+                    autoComplete="off"
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
                     className="border-x-0 border-t-0 border-b rounded-sm border-white w-full p-3 bg-white/10
@@ -422,7 +368,7 @@ const JoinButton = () => {
                       <>
                         Already have an account?{" "}
                         <span
-                          className="text-violet-400 font-bold cursor-pointer hover:underline"
+                          className="text-amber-300 font-bold cursor-pointer hover:underline"
                           onClick={() => setForm("login")}
                         >
                           Login

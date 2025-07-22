@@ -8,19 +8,20 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
   <div
     style={{
       fontFamily: "Arial, sans-serif",
-      backgroundColor: "#0b0b0b",
+      backgroundColor: "#0b0b0b", // Keeping dark background for contrast
       padding: "40px 24px",
       color: "#ffffff",
-      border: "1px solid #a78bfa", // violet-400
+      border: "1px solid #d97706", // amber-700 for the main border
       borderRadius: "12px",
       maxWidth: "600px",
       margin: "0 auto",
-      boxShadow: "0 0 20px #8b5cf6, 0 0 40px #8b5cf6",
+      // Adjusted boxShadow to use amber colors, creating a warm glow
+      boxShadow: "0 0 20px #f59e0b, 0 0 40px #d97706",
     }}
   >
     <h1
       style={{
-        color: "#a78bfa", // violet-400
+        color: "#f59e0b", // amber-500 for the main heading color
         textTransform: "uppercase",
         textAlign: "center",
         fontSize: "24px",
@@ -43,7 +44,8 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
 
     <div
       style={{
-        backgroundColor: "#a78bfa33", // violet with transparency
+        // Using amber with transparency for the OTP background
+        backgroundColor: "rgba(245, 158, 11, 0.2)", // f59e0b with 20% opacity
         padding: "16px 24px",
         borderRadius: "8px",
         fontSize: "32px",
@@ -53,7 +55,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
         textAlign: "center",
         margin: "24px auto",
         width: "fit-content",
-        border: "1px solid #8b5cf6",
+        border: "1px solid #f59e0b", // amber-500 for the OTP box border
       }}
     >
       {otp}
@@ -87,7 +89,7 @@ export const EmailTemplate: React.FC<EmailTemplateProps> = ({ otp }) => (
         fontSize: "14px",
         marginTop: "32px",
         textAlign: "center",
-        color: "#a78bfa",
+        color: "#fbbf24", // Lighter amber-300 for the team signature, for slight contrast
       }}
     >
       — The Prompt Brawl Team ⚔️
