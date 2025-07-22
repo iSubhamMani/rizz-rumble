@@ -9,10 +9,6 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        anton: "var(--font-anton)",
-        raleway: "var(--font-raleway)",
-      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
