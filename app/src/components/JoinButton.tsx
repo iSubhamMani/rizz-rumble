@@ -8,9 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Swords } from "lucide-react";
-import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState } from "react";
 import { signup } from "@/actions/signup";
@@ -261,22 +259,22 @@ const JoinButton = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          size="lg"
-          className="uppercase fade-pullup mt-8 border border-white font-bold text-sm sm:text-base p-6 
-             text-white hover:bg-white hover:text-violet-500 
-             bg-transparent relative z-10 
-             shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6] 
-             hover:shadow-[0_0_20px_#8b5cf6,0_0_40px_#8b5cf6] 
+        <button
+          className="flex items-center justify-self-center fade-pullup mt-2 rounded-full border border-gray-200 font-bold text-sm sm:text-base p-4 sm:p-6 
+             text-black
+             bg-white relative z-10 
+             group
+             hover:shadow-[0_0_20px_#fff,0_0_40px_#f97316] 
              transition-all duration-200 ease-in-out"
         >
-          <Swords className="size-6 mr-2 hover:text-violet-500  drop-shadow-[0_0_6px_#8b5cf6]" />
+          <Swords className="size-6 mr-2 group-hover:rotate-12 transition-all duration-300 ease-in-out" />
           <span>Join the battle</span>
-        </Button>
+          <Swords className="size-6 ml-2 group-hover:-rotate-12 transition-all duration-300 ease-in-out" />
+        </button>
       </DialogTrigger>
       <DialogContent
-        className="border border-violet-300 bg-black/40 text-white 
-        p-6 rounded-lg backdrop-blur-lg shadow-md"
+        className="border border-violet-300
+        p-6 rounded-lg shadow-md bg-white/10 backdrop-blur-lg border-white/20 text-white"
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
@@ -307,9 +305,9 @@ const JoinButton = () => {
                     <InputOTPSlot
                       key={index}
                       index={index}
-                      className="w-12 h-14 text-center text-white text-xl bg-violet-400/20 
-              border-x-0 border-t-0 border-b border-violet-500 rounded-sm 
-              focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-12 h-14 text-center text-white text-xl bg-white/10 
+              border-x-0 border-t-0 border-b border-white rounded-sm 
+              focus:outline-none focus:ring-2 focus:ring-white"
                     />
                   ))}
                 </InputOTPGroup>
@@ -330,15 +328,15 @@ const JoinButton = () => {
               <Label htmlFor="email" className="text-sm font-bold">
                 Username
               </Label>
-              <Input
+              <input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Create a username"
                 required
-                className="uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
-                text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="border-x-0 border-t-0 border-b rounded-sm border-white w-full p-3 bg-white/10
+                text-white focus:outline-none focus:ring-2 focus:ring-white"
               />
             </div>
           )}
@@ -348,14 +346,14 @@ const JoinButton = () => {
                 <Label htmlFor="username" className="text-sm font-bold">
                   Email
                 </Label>
-                <Input
+                <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="placeholder:uppercase border-x-0 border-t-0 border-b rounded-sm border-violet-500 w-full p-3 bg-black/80
-                text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="border-x-0 border-t-0 border-b rounded-sm border-white w-full p-3 bg-white/10
+                text-white focus:outline-none focus:ring-2 focus:ring-white"
                 />
               </div>
               <div className="space-y-2">
@@ -363,23 +361,23 @@ const JoinButton = () => {
                   Password
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <input
                     id="password"
                     type={isPasswordVisible ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="border-x-0 border-t-0 border-b rounded-sm border-violet-500 placeholder:uppercase w-full p-3 bg-black/80
-                    text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    className="border-x-0 border-t-0 border-b rounded-sm border-white w-full p-3 bg-white/10
+                text-white focus:outline-none focus:ring-2 focus:ring-white"
                   />
                   <button
                     type="button"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   >
                     {isPasswordVisible ? (
-                      <EyeOff className="size-5 text-violet-500" />
+                      <EyeOff className="size-5 text-white" />
                     ) : (
-                      <Eye className="size-5 text-violet-500" />
+                      <Eye className="size-5 text-white" />
                     )}
                   </button>
                 </div>
@@ -388,28 +386,33 @@ const JoinButton = () => {
           )}
           <DialogFooter className="mt-4">
             <div className="flex flex-col w-full">
-              <Button
+              <button
                 type="submit"
                 disabled={loading}
-                className="uppercase transition-all duration-200 ease-in-out w-full border border-white text-white font-bold py-5 bg-transparent
-                    hover:bg-white hover:text-violet-500 shadow-[0_0_10px_#8b5cf6,0_0_20px_#8b5cf6]"
+                className="rounded-full flex items-center justify-center border border-gray-200 font-bold text-xs sm:text-sm p-4 
+             text-black
+             bg-white relative z-10 
+             group
+             hover:shadow-[0_0_8px_#fff,0_0_10px_#f97316] transition-all duration-200 ease-in-out"
               >
-                {loading && <Swords className="animate-pulse " />}
+                {loading && (
+                  <Swords className="animate-pulse size-4 sm:size-5" />
+                )}
                 {!loading &&
                   (form === "login"
                     ? "Login"
                     : form === "otp"
                       ? "Verify"
                       : "Sign Up")}
-              </Button>
+              </button>
               {form !== "otp" && (
                 <div>
-                  <p className="text-sm text-center mt-6">
+                  <p className="text-sm text-center mt-6 ">
                     {form === "login" ? (
                       <>
                         Don&apos;t have an account?{" "}
                         <span
-                          className="text-violet-400 font-bold cursor-pointer hover:underline"
+                          className="text-purple-400 font-bold cursor-pointer hover:underline"
                           onClick={() => setForm("signup")}
                         >
                           Sign up
