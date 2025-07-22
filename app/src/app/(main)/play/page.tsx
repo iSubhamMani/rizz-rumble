@@ -7,8 +7,22 @@ import TopPlayerInfo from "@/components/TopPlayerInfo";
 import PlayBtn from "@/components/PlayBtn";
 import Leaderboard from "@/components/Leaderboard";
 import MatchmakingDialog from "@/components/MatchmakingDialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Award,
+  Calendar,
+  Settings,
+  Target,
+  Trophy,
+  User,
+  Users,
+  Play,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-const Play = async () => {
+const PlayPage = async () => {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) {
     return (
@@ -39,35 +53,112 @@ const Play = async () => {
   const user = await UserModel.findById(userId);
 
   return (
-    <main className="flex flex-col h-screen text-white relative overflow-hidden">
-      {/* Background with a dark base and radial gradient for light convergence */}
-      <PlayBtn player={JSON.stringify(user)} />
-      <div className="absolute top-1/4 -left-20 w-40 h-40 rounded-full bg-pink-500/20 blur-3xl" />
-      <div className="absolute bottom-1/4 -right-20 w-60 h-60 rounded-full bg-violet-500/20 blur-3xl" />
+    <main>
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="font-bebas text-4xl md:text-6xl font-bold text-white mb-2 tracking-tight">
+          Rizz Rumble
+        </h1>
+      </div>
 
-      <div
-        className="absolute inset-0 -z-50"
-        style={{
-          background: `
-             radial-gradient(
-        circle at 120% 50%,
-        rgba(0, 0, 0, 0.9) 10%,         
-        rgba(0, 0, 0, 0.9) 10%,         /* subtle transition */
-        rgba(5, 0, 20, 0.95) 60%,        /* near-black with purple hint */
-        rgba(0, 0, 0, 1.0) 85%            /* pure black edge */
-      )
-            `,
-        }}
-      />
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Profile & Quick Stats */}
+        <div className="space-y-6">
+          {/* Profile Card */}
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader className="pb-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16 border-2 border-white/30">
+                  <AvatarImage src="/placeholder.svg?height=64&width=64" />
+                  <AvatarFallback className="bg-purple-600 text-white text-xl">
+                    PB
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold">Player One</h3>
+                  <Badge
+                    variant="secondary"
+                    className="bg-orange-500/20 text-orange-300 border-orange-500/30"
+                  >
+                    Level 15
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs sm:text-sm md:text-base">
+              <div className="flex justify-between">
+                <span className="text-white/70">Wins</span>
+                <span className="font-semibold">47</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Win Rate</span>
+                <span className="font-semibold">73%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Rank</span>
+                <span className="font-semibold text-yellow-400">#12</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Content */}
-      <div className="flex gap-6 items-start justify-between px-8 pt-6">
-        <TopPlayerInfo props={JSON.stringify(user)} />
-        <MatchmakingDialog player={JSON.stringify(user)} />
-        <Leaderboard />
+        {/* Center Column - Main Actions */}
+        <div className="space-y-6">
+          {/* Play Button */}
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+            <CardContent className="p-8 text-center">
+              <button className="flex items-center justify-center gap-2  font-bebas bg-white text-black text-lg sm:text-xl lg:text-2xl px-6 sm:px-8 md:px-10 lg:px-12 py-6 md:py-8 h-auto font-bold rounded-2xl transition-all duration-200 hover:scale-105 shadow-2xl w-full mb-4">
+                <Play className="size-6" />
+                PLAY NOW
+              </button>
+              <p className="text-white/70 text-sm">
+                Show off your rizz in a duel!
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Leaderboard & Recent Activity */}
+        <div className="space-y-6">
+          {/* Leaderboard */}
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader className="pb-4 text-sm sm:text-base">
+              <CardTitle className="flex items-center gap-2 border-b border-white/20 pb-2">
+                <Trophy className="h-5 w-5 text-yellow-400" />
+                Leaderboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { rank: 1, name: "BattleMaster", score: "2,847", badge: "🥇" },
+                { rank: 2, name: "QuickDraw", score: "2,691", badge: "🥈" },
+                { rank: 3, name: "ShotCaller", score: "2,534", badge: "🥉" },
+                { rank: 4, name: "FastBreak", score: "2,401", badge: "" },
+                { rank: 5, name: "CourtKing", score: "2,298", badge: "" },
+              ].map((player) => (
+                <div
+                  key={player.rank}
+                  className="flex items-center justify-between py-2"
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xs sm:text-sm md:text-base">
+                      {player.badge || `#${player.rank}`}
+                    </span>
+                    <span className="font-medium text-xs sm:text-sm md:text-base">
+                      {player.name}
+                    </span>
+                  </div>
+                  <span className="text-white font-semibold text-xs sm:text-sm md:text-base">
+                    {player.score}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </main>
   );
 };
 
-export default Play;
+export default PlayPage;
