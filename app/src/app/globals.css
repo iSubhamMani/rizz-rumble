@@ -125,3 +125,20 @@
   font-weight: 400;
   font-style: normal;
 }
+
+input[type="password"]::-ms-reveal {
+  display: none;
+}
+
+/* For Chrome, Safari, and other WebKit-based browsers */
+input[type="password"]::-webkit-outer-spin-button,
+input[type="password"]::-webkit-inner-spin-button,
+input[type="password"]::-webkit-reveal {
+  -webkit-appearance: none;
+  margin: 0; /* Sometimes needed to remove extra space */
+}
+
+/* You might also want to hide the clear button if it appears */
+input[type="password"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
