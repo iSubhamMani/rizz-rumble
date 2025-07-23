@@ -25,8 +25,6 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { verifyEmail } from "@/actions/email/verify";
 import { sendOtp } from "@/actions/email/send";
 import { useRouter } from "next/navigation";
-import StyledButtonPrimary from "./StyledButtonPrimary";
-import PrimaryButton from "./PrimaryButton";
 import { toastStyle } from "@/lib/toastStyle";
 
 const JoinButton = () => {
@@ -216,10 +214,6 @@ const JoinButton = () => {
         className="border border-violet-300
         p-6 rounded-lg shadow-md bg-white/10 backdrop-blur-lg border-white/20 text-white"
       >
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {form === "login"
@@ -230,7 +224,7 @@ const JoinButton = () => {
           </DialogTitle>
         </DialogHeader>
         {form === "otp" && (
-          <DialogDescription className="text-sm text-amber-300">
+          <DialogDescription className="text-sm text-white">
             An otp has been sent to your email
           </DialogDescription>
         )}
@@ -259,7 +253,7 @@ const JoinButton = () => {
               <p className="text-sm text-center">
                 Didn&apos;t receive the OTP?{" "}
                 <span
-                  className="text-amber-300 font-bold cursor-pointer hover:underline"
+                  className="text-white font-bold cursor-pointer hover:underline"
                   onClick={() => sendOtpToEmail(email)}
                 >
                   Resend OTP
@@ -368,7 +362,7 @@ const JoinButton = () => {
                       <>
                         Already have an account?{" "}
                         <span
-                          className="text-amber-300 font-bold cursor-pointer hover:underline"
+                          className="text-purple-400 font-bold cursor-pointer hover:underline"
                           onClick={() => setForm("login")}
                         >
                           Login
