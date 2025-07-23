@@ -1,6 +1,6 @@
-# Prompt Brawl
+# Rizz Rumble
 
-Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to provide a fun and engaging experience to test your prompt writing skills.
+Rizz Rumble is an interactive 1v1 multiplayer game where players compete to create the best pickup lines. The game is designed to be fun, engaging, and a test of creativity and wit. Players can challenge each other in real-time, making it a perfect game for friends and casual gamers alike.
 
 ## Features
 
@@ -12,11 +12,11 @@ Prompt Brawl is an interactive 1v1 prompt battle game. The game is designed to p
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/iSubhamMani/prompt-brawl.git
+   git clone https://github.com/iSubhamMani/rizz-rumble.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd prompt-brawl
+   cd rizz-rumble
    ```
 3. Install dependencies and start the application:
 
