@@ -1,19 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ButtonPrimary from "./PrimaryButton";
 import { useRef, useState } from "react";
-import Image from "next/image";
-import { Swords, Upload } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "./ui/badge";
 
 const ProfileInfo = ({ props }: { props: string }) => {
   const user = JSON.parse(props);
@@ -25,28 +16,43 @@ const ProfileInfo = ({ props }: { props: string }) => {
   };
 
   return (
-    <div className="flex-1">
-      <div
-        className={`group relative px-6 py-4 
-                    bg-transparent/40
-            border-4 border-amber-900 
-            rounded-none
-            font-secondary text-sm sm:text-lg md:text-xl text-amber-100
-            shadow-lg
-            wood-texture
-            max-w-sm mx-auto
-          `}
-      >
-        {/* Wood grain overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-amber-800/20 to-amber-900/40 rounded-none" />
-        {/* Metal corner brackets */}
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
-
-        {/* Hover glow effect */}
-      </div>
+    <div className="space-y-6">
+      {/* Profile Card */}
+      <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+        <CardHeader className="pb-4">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-16 w-16 border-2 border-white/30">
+              <AvatarImage src="/placeholder.svg?height=64&width=64" />
+              <AvatarFallback className="bg-purple-600 text-white text-xl">
+                PB
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold">Player One</h3>
+              <Badge
+                variant="secondary"
+                className="bg-orange-500/20 text-orange-300 border-orange-500/30"
+              >
+                Level 15
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs sm:text-sm md:text-base">
+          <div className="flex justify-between">
+            <span className="text-white/70">Wins</span>
+            <span className="font-semibold">47</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/70">Win Rate</span>
+            <span className="font-semibold">73%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-white/70">Rank</span>
+            <span className="font-semibold text-yellow-400">#12</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

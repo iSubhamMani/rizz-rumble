@@ -7,32 +7,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Swords } from "lucide-react";
+import { Play } from "lucide-react";
 import GameModes from "./GameModes";
-import StyledButtonPrimary from "./StyledButtonPrimary";
 
 const PlayBtn = ({ player }: { player: string }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <StyledButtonPrimary className="mt-6">
-          <div className="relative flex items-center justify-center gap-3">
-            <Swords className="size-4 sm:size-5 md:size-6 group-hover:rotate-12 transition-transform duration-300" />
-            <span className="drop-shadow-lg">Play</span>
-            <Swords className="size-4 sm:size-5 md:size-6 group-hover:-rotate-12 transition-transform duration-300" />
-          </div>
-        </StyledButtonPrimary>
+        <button className="flex items-center justify-center gap-2  font-bebas bg-white text-black text-lg sm:text-xl lg:text-2xl px-6 sm:px-8 md:px-10 lg:px-12 py-6 md:py-8 h-auto font-bold rounded-2xl transition-all duration-200 hover:scale-105 shadow-2xl w-full mb-4">
+          <Play className="size-6" />
+          PLAY NOW
+        </button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl bg-amber-900/20 backdrop-blur-md border-amber-900 border-4 rounded-lg">
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
+      <DialogContent className="max-w-2xl bg-white/10 rounded-2xl backdrop-blur-md border-white/20 text-white">
         <DialogHeader>
-          <DialogTitle className="text-base font-bold font-secondary">
-            Select Mode
-          </DialogTitle>
+          <DialogTitle className="text-base font-bold">Select Mode</DialogTitle>
         </DialogHeader>
 
         <GameModes player={player} />

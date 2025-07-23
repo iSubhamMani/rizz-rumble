@@ -1,28 +1,44 @@
 import { Trophy } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Leaderboard = () => {
   return (
-    <div className="flex-1 my-auto h-[90%] sm:h-[80%]">
-      <div
-        className={`
-                 h-full
-           group relative px-6 py-4 
-           bg-transparent/40
-           border-4 border-amber-900 
-           rounded-none
-           font-secondary text-sm sm:text-lg md:text-xl text-amber-100
-           shadow-lg
-         `}
-      >
-        {/* Wood grain overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-amber-800/20 to-amber-900/40 rounded-none" />
-        {/* Metal corner brackets */}
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600" />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600" />
-        Leaderboard <Trophy className="inline -mt-1 mx-2 size-5" />
-      </div>
+    <div className="space-y-6">
+      {/* Leaderboard */}
+      <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+        <CardHeader className="pb-4 text-sm sm:text-base">
+          <CardTitle className="flex items-center gap-2 border-b border-white/20 pb-2">
+            <Trophy className="h-5 w-5 text-yellow-400" />
+            Leaderboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[
+            { rank: 1, name: "BattleMaster", score: "2,847", badge: "🥇" },
+            { rank: 2, name: "QuickDraw", score: "2,691", badge: "🥈" },
+            { rank: 3, name: "ShotCaller", score: "2,534", badge: "🥉" },
+            { rank: 4, name: "FastBreak", score: "2,401", badge: "" },
+            { rank: 5, name: "CourtKing", score: "2,298", badge: "" },
+          ].map((player) => (
+            <div
+              key={player.rank}
+              className="flex items-center justify-between py-2"
+            >
+              <div className="flex items-center space-x-3">
+                <span className="text-xs sm:text-sm md:text-base">
+                  {player.badge || `#${player.rank}`}
+                </span>
+                <span className="font-medium text-xs sm:text-sm md:text-base">
+                  {player.name}
+                </span>
+              </div>
+              <span className="text-white font-semibold text-xs sm:text-sm md:text-base">
+                {player.score}
+              </span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };
