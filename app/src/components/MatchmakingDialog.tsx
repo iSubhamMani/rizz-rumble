@@ -46,36 +46,22 @@ const MatchmakingDialog = ({ player }: { player: string }) => {
 
   return (
     inMatchmaking && (
-      <div
-        className={`
-          h-full
-          group relative px-6 py-4 
-          bg-transparent/40
-          border-4 border-amber-900 
-          rounded-none
-          font-secondary text-sm sm:text-lg md:text-xl text-amber-100
-          shadow-lg
-          flex items-center justify-between
-        `}
-      >
-        {/* Wood grain overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-amber-800/20 to-amber-900/40 rounded-none pointer-events-none" />
-        {/* Metal corner brackets */}
-        <div className="absolute -top-1 -left-1 w-4 h-4 border-l-2 border-t-2 border-yellow-600 pointer-events-none" />
-        <div className="absolute -top-1 -right-1 w-4 h-4 border-r-2 border-t-2 border-yellow-600 pointer-events-none" />
-        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-l-2 border-b-2 border-yellow-600 pointer-events-none" />
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-r-2 border-b-2 border-yellow-600 pointer-events-none" />
-        <div className="flex items-center animate-pulse z-10">
-          <Swords className="size-5 mr-2" />
-          <h2 className="font-bold">Finding a match...</h2>
+      <div className="mt-8 fade-pullup">
+        <p className="text-base animate-pulse">
+          <Swords className="inline mr-2 text-white size-5" />
+          Finding a match...
+        </p>
+        <div className="mt-4 relative w-full h-0.5 overflow-hidden bg-orange-500/10 rounded-full">
+          <div className="absolute h-full w-1/3 bg-orange-500 rounded-full animate-scan-move"></div>
         </div>
-        <button
-          onClick={() => cancelMatchmaking(playerInfo._id)}
-          className="z-10 ml-4 hover:text-amber-300 transition-colors"
-          aria-label="Cancel matchmaking"
-        >
-          <X className="size-5" />
-        </button>
+        <div className="flex justify-end mt-6">
+          <button
+            className="bg-white shadow-md font-medium text-black p-3 rounded-lg hover:bg-gray-200 transition-colors"
+            onClick={() => cancelMatchmaking(playerInfo._id)}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     )
   );
