@@ -1,6 +1,7 @@
 "use client";
 
 import { useSocket } from "@/context/SocketContext";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const formatTime = (seconds: number) => {
@@ -32,14 +33,15 @@ const Timer = () => {
   }, [timeLeft]);
 
   return (
-    <p
-      style={{
-        textShadow: "0 0 10px #8b5cf6, 0 2px 6px #8b5cf6",
-      }}
-      className="font-bold text-violet-100 text-2xl uppercase tracking-widest"
-    >
-      {formatTime(timeLeft)}
-    </p>
+    <div className="text-center">
+      <div className="flex items-center justify-center space-x-1">
+        <Clock className="h-4 w-4 text-orange-400" />
+        <span className="text-lg md:text-xl font-bold">
+          {formatTime(timeLeft)}
+        </span>
+      </div>
+      <p className="text-xs text-white/70">Time Left</p>
+    </div>
   );
 };
 
