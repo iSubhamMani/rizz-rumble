@@ -27,48 +27,50 @@ class AiService {
     const player2Id = Object.values(responses)[1].player_id;
 
     const prompt = `
-            You are a judge in a 1v1 prompt battle game.
-            Two players have written their responses to a given challenge topic.
-            Each response has the player_id and their response to the challenge.
-            Your task is to carefully read both responses and objectively select the better one based on the following criteria:
-            - Relevance to the challenge topic
-            - Creativity and originality
-            - Clarity and coherence
-            - Overall quality of writing
+    You are a judge in a 1v1 pickup line battle game.
+    Two players have written pickup lines in response to a challenge situation.
+    Each response has the player_id and their pickup line.
 
-            Rules:
-            - Be strictly objective.
-            - After analyzing, output the winning player's ID and a short reason for your decision (2-3 sentences).
-            - If both responses are exactly the same or out of context, set winner to "none". Give reason for the same.
-            - Do not include any additional text or explanations outside of the JSON format.
+    Your task is to carefully read both pickup lines and objectively select the better one based on the following criteria:
+    - Relevance to the given scenario
+    - Humor or cleverness
+    - Creativity and originality
+    - Smoothness or impact of the line
 
-            Here is the information:
+    Rules:
+    - Be strictly objective.
+    - After analyzing, output the winning player's ID and a short reason for your decision (2-3 sentences).
+    - If both responses are identical or completely irrelevant to the scenario, set winner to "none". Give reason for the same.
+    - Do not include any additional text or explanations outside of the JSON format.
 
-            Challenge Topic:
-            ${challenge}
+    Here is the information:
 
-            Player 1 ID: ${player1Id}
-            Player 1 Response:
-            ${player1Response}
+    Challenge Scenario:
+    ${challenge}
 
-            Player 2 ID: ${player2Id}
-            Player 2 Response:
-            ${player2Response}
+    Player 1 ID: ${player1Id}
+    Player 1 Pickup Line:
+    ${player1Response}
 
-            Now determine the winner. Use the player ids given above for the winner field.
-            For the reason field don't include any statement like "Player 2's response is more relevant" or even their ids. Just provide a brief reason for your decision.
-            Respond in this exact JSON format:
-            {
-            "winner": "player_id here",
-            "reason": "brief reason here without referring to player numbers or IDs"
-            }
+    Player 2 ID: ${player2Id}
+    Player 2 Pickup Line:
+    ${player2Response}
 
-            Example:
-            {
-              "winner": "123645",
-              "reason": Response was more creative and relevant to the challenge topic."
-            }
-        `;
+    Now determine the winner. Use the player ids given above for the winner field.
+    For the reason field, don't include any statement like "Player 2's response is more relevant" or mention any player numbers or IDs. Just provide a brief reason for your decision.
+
+    Respond in this exact JSON format:
+    {
+      "winner": "player_id here",
+      "reason": "brief reason here without referring to player numbers or IDs"
+    }
+
+    Example:
+    {
+      "winner": "847129",
+      "reason": "Line was clever, funny, and matched the scenario perfectly."
+    }
+    `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
@@ -103,23 +105,23 @@ class AiService {
     }
 
     const prompt = `
-      You are a challenge designer for a 1v1 prompt battle game.
+      You are a challenge designer for a 1v1 pickup line battle game.
 
-      Your task is to generate a short, creative topic (5-7 words max) that will challenge users to write the best **prompt** — not a story — based on that topic.
+      Generate a creative, funny, or awkward situation in which someone might try to use a pickup line. Make it imaginative and unique — not generic.
 
-      The topic should:
-      - Encourage users to write creative, useful, or thought-provoking prompts.
-      - Be grounded in real-life or practical scenarios (e.g., productivity, creativity, learning, tools, social situations).
-      - Avoid fantasy tropes or storytelling themes.
-      - Be simple, clear, and non-technical.
-      - NOT be a story starter or contain characters, plots, or magical events.
+      Examples:
+      - "at a cat adoption center"
+      - "during a zombie apocalypse"
+      - "stuck in an elevator with a celebrity"
+      - "in a spaceship drifting near Mars"
+      - "in the middle of a medieval duel"
 
       Avoid generating topics similar to:
       ${previousChallenges.join(", ")}
 
-      Return only in this JSON format:
+      Only return your response in the following JSON format:
       {
-        "newChallenge": "the generated topic"
+        "newChallenge": "your generated situation here"
       }
     `;
 
