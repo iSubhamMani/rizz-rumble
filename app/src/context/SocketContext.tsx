@@ -143,6 +143,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         setInitialChallenge(null);
         setMatchId(null);
         setInMatchmaking(true);
+        setChatMessages([]);
         socket.current.emit("event:matchmaking", JSON.stringify({ player_id }));
       }
     },
